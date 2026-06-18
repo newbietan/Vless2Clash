@@ -1,0 +1,23 @@
+{
+  "name": "sublink-worker",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "node scripts/deploy.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.16.8",
+    "vitest": "^4.1.7",
+    "wrangler": "^4.51.0"
+  },
+  "dependencies": {
+    "hono": "^4.10.7",
+    "js-yaml": "^4.1.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
