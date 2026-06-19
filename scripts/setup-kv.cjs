@@ -111,6 +111,18 @@ function updateWranglerConfig(kvId) {
 function main() {
   console.log('=== KV Namespace 自动配置 ===\n');
 
+  if (!process.env.CLOUDFLARE_API_TOKEN) {
+    console.error('错误: 未设置 CLOUDFLARE_API_TOKEN 环境变量');
+    console.error('');
+    console.error('请在以下位置之一配置:');
+    console.error('  1. Cloudflare Dashboard → Worker → Settings → Environment Variables');
+    console.error('  2. GitHub Actions → Settings → Secrets and variables → Actions');
+    console.error('  3. 本地终端: export CLOUDFLARE_API_TOKEN=<your-token>');
+    console.error('');
+    console.error('创建 Token: https://developers.cloudflare.com/fundamentals/api/get-started/create-token/');
+    process.exit(1);
+  }
+
   let namespace = checkKvNamespace();
 
   if (!namespace) {
