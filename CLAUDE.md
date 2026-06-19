@@ -13,12 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-Vless2Clash 是多平台代理订阅转换器：将各类协议（ShadowSocks/VMess/VLESS/Hysteria2/Trojan/TUIC）转为客户端配置（Sing-Box/Clash/Xray/Surge）。同一份代码跑在 Cloudflare Workers / Node.js / Vercel / Docker 上。技术栈：Hono（Web/JSX SSR）+ Vitest + Wrangler + esbuild + ioredis。
+Vless2Clash 是多平台代理订阅转换器：将各类协议（ShadowSocks/VMess/VLESS/Hysteria2/Trojan/TUIC）转为客户端配置（Sing-Box/Clash/Xray/Surge）。同一份代码跑在 Cloudflare Workers / Node.js / Vercel 上。技术栈：Hono（Web/JSX SSR）+ Vitest + Wrangler + esbuild + ioredis。
 
 ## 常用命令
 
 - `npm run dev` — Wrangler 本地开发（Cloudflare Workers 入口）
-- `npm run dev:node` — esbuild bundle + 启动 Node.js server（Docker 同此入口）
+- `npm run dev:node` — esbuild bundle + 启动 Node.js server
 - `npm test` — Vitest（基于 `@cloudflare/vitest-pool-workers`，依赖 `wrangler.toml`）
 - `npx vitest test/<file>.test.js` — 跑单个测试文件
 - `npm run build` — Vercel 构建（输出到 `dist/vercel/`）
@@ -28,7 +28,7 @@ Vless2Clash 是多平台代理订阅转换器：将各类协议（ShadowSocks/VM
 
 ## 多运行时架构
 
-入口分平台：`src/worker.jsx`（Cloudflare）、`src/platforms/node-server.js`（Node/Docker）、`api/index.js`（Vercel）。三者都通过 `createApp(runtime)`（`src/app/createApp.jsx`）创建同一个 Hono app。
+入口分平台：`src/worker.jsx`（Cloudflare）、`src/platforms/node-server.js`（Node.js）、`api/index.js`（Vercel）。三者都通过 `createApp(runtime)`（`src/app/createApp.jsx`）创建同一个 Hono app。
 
 - `src/runtime/{cloudflare,node,vercel}.js` 提供平台适配
 - `src/runtime/runtimeConfig.js` 规范化 KV、资源获取、日志、环境变量默认值
