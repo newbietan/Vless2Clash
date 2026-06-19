@@ -74,9 +74,10 @@
    - `ADMIN_PASSWORD`：默认为 `123456`，建议通过 Cloudflare Dashboard 的环境变量覆盖
 3. **创建应用**：登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)，进入 Workers & Pages，选择 "Import a repository"，关联你 fork 的仓库。
 4. **填写构建命令**：在部署设置中，将"构建命令"填写为 `npm run setup-kv`。
-5. **配置环境变量**：在 Settings → Environment Variables 中添加：
-   - `CLOUDFLARE_API_TOKEN`：你的 Cloudflare API Token（需 Workers + KV 权限）
-   - `CLOUDFLARE_ACCOUNT_ID`：你的 Account ID
+5. **配置环境变量**（可选）：在 Settings → Environment Variables 中按需添加：
+   - `ADMIN_PASSWORD`：管理密码，默认 `123456`，建议在此覆盖
+   - `TURNSTILE_SITEKEY`：Turnstile Site Key
+   - `TURNSTILE_SECRET_KEY`：Turnstile Secret Key
 6. **部署**：点击保存并部署，KV namespace 会自动检测，不存在则自动创建。
 
 #### 本地命令行部署
