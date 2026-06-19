@@ -1,12 +1,11 @@
 // Application constants
-export const APP_NAME = 'Sublink Worker';
-export const APP_VERSION = '2.4.2';
-export const GITHUB_REPO = 'https://github.com/7Sageer/sublink-worker';
-export const GITHUB_API_RELEASES = 'https://api.github.com/repos/7Sageer/sublink-worker/releases/latest';
+export const APP_NAME = 'Vless2Clash';
+export const GITHUB_REPO = 'https://github.com/newbietan/Vless2Clash';
+export const GITHUB_API_RELEASES = 'https://api.github.com/repos/newbietan/Vless2Clash/releases/latest';
 export const DOCS_URL = 'https://sublink.works';
 
 // SEO and metadata
-export const APP_KEYWORDS = 'clash, singbox, surge, subscription, converter, sublink';
+export const APP_KEYWORDS = 'clash, singbox, surge, subscription, converter, vless, clash';
 
 // Subtitles for different languages
 export const APP_SUBTITLE = {

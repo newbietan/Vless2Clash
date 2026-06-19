@@ -24,7 +24,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Sublink Worker ${{ steps.version.outputs.VERSION }}
+          name: Vless2Clash ${{ steps.version.outputs.VERSION }}
           body: |
             ## Release ${{ steps.version.outputs.VERSION }}
 

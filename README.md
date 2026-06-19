@@ -1,6 +1,6 @@
 <div align="center">
 
-# 多平台订阅聚合平台
+# Vless2Clash
 
 **VLESS 链接聚合、去重、转换为 Clash 订阅配置**
 
@@ -29,8 +29,8 @@
 ### 安装
 
 ```bash
-git clone https://github.com/newbietan/sublink-worker.git
-cd sublink-worker
+git clone https://github.com/newbietan/Vless2Clash.git
+cd Vless2Clash
 npm install
 ```
 

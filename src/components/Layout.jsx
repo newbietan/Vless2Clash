@@ -295,7 +295,7 @@ const Footer = () => {
                 <span>运行中</span>
             </div>
             <div class="font-mono">Refactored from <a class="text-primary hover:underline" href="https://github.com/7Sageer/sublink-worker" target="_blank" rel="noopener noreferrer">Sublink Worker</a></div>
-            <a class="hover:text-primary transition-colors" href="https://github.com/newbietan/sublink-worker" target="_blank" rel="noopener noreferrer">
+            <a class="hover:text-primary transition-colors" href="https://github.com/newbietan/Vless2Clash" target="_blank" rel="noopener noreferrer">
                 GitHub
             </a>
         </footer>
