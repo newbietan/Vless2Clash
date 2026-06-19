@@ -44,6 +44,11 @@ npm run dev
 
 ### 部署
 
+> **注意**：部署前请修改 `wrangler.toml` 中的以下配置：
+> - `routes.pattern`：改为你自己的域名（需已在 Cloudflare 注册并托管）
+> - `kv_namespaces.id`：填入你自己的 KV namespace ID
+> - `ADMIN_PASSWORD`：默认为 `123456`，建议通过 Cloudflare Dashboard 的环境变量覆盖，不要明文写在配置文件中
+
 #### 方式一：Cloudflare Dashboard（推荐）
 
 1. Fork 本仓库
@@ -75,7 +80,7 @@ npm run deploy
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `ADMIN_PASSWORD` | 否 | 管理密码，不设置则无需登录 |
+| `ADMIN_PASSWORD` | 否 | 管理密码，默认 `123456`，建议在环境变量中修改 |
 | `TURNSTILE_SITEKEY` | 否 | Turnstile Site Key，不设置则跳过验证 |
 | `TURNSTILE_SECRET_KEY` | 否 | Turnstile Secret Key |
 
