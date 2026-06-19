@@ -48,29 +48,35 @@ npm run dev
 > - `routes.pattern`：改为你自己的域名（需已在 Cloudflare 注册并托管）
 > - `ADMIN_PASSWORD`：默认为 `123456`，建议通过 Cloudflare Dashboard 的环境变量覆盖
 
-#### 方式一：Cloudflare Dashboard（推荐）
+#### 方式一：GitHub Actions 自动部署（推荐）
+
+KV namespace 会自动检测，不存在则自动创建并绑定。
 
 1. Fork 本仓库
-2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/) → Workers & Pages → Create
-3. 选择 "Import a repository"，关联你 fork 的仓库
-4. 创建 KV namespace：Workers → KV → Create namespace
-5. 绑定 KV namespace：进入你的 Worker → Settings → Variables → KV Namespace Bindings → Add：
+2. 在你的仓库 Settings → Secrets and variables → Actions 中添加：
+   - `CLOUDFLARE_API_TOKEN`：Cloudflare API Token（需 Workers 权限）
+   - `CF_ACCOUNT_ID`：Cloudflare Account ID
+3. 推送到 `main` 分支或手动触发 workflow，自动完成 KV 创建 + 部署
+
+#### 方式二：Cloudflare Dashboard 直连
+
+需手动创建和绑定 KV namespace：
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/) → Workers & Pages → Create
+2. 选择 "Import a repository"，关联你 fork 的仓库
+3. 创建 KV namespace：Workers → KV → Create namespace
+4. 绑定 KV namespace：进入你的 Worker → Settings → Variables → KV Namespace Bindings → Add：
    - Variable name: `SUBLINK_KV`
    - KV namespace: 选择上一步创建的 namespace
-6. 按需配置环境变量（见下方）
-7. 部署
+5. 按需配置环境变量（见下方）
+6. 部署
 
-#### 方式二：CLI 部署
+#### 方式三：CLI 部署
+
+KV namespace 会自动检测，不存在则自动创建并绑定。
 
 ```bash
-# 登录 Cloudflare
 npx wrangler login
-
-# 创建 KV namespace 并绑定到 Worker
-npx wrangler kv namespace create SUBLINK_KV
-# 按提示将输出的 binding 配置添加到 wrangler.toml
-
-# 部署
 npm run deploy
 ```
 
