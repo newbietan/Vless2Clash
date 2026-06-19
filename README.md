@@ -197,7 +197,3 @@ src/
 本项目基于 [MIT License](LICENSE) 协议开源。
 
 欢迎提交 Issue 和 Pull Request。如果这个项目对你有帮助，恳请点个 ⭐ Star 支持一下！
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=newbietan/Vless2Clash&type=Date)](https://star-history.com/#newbietan/Vless2Clash&Date)
