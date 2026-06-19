@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "node scripts/deploy.mjs",
+    "deploy": "wrangler deploy",
     "test": "vitest run"
   },
   "devDependencies": {
