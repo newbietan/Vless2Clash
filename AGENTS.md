@@ -38,7 +38,7 @@ Vless2Clash 是多平台代理订阅转换器：将各类协议（ShadowSocks/VM
 
 - 服务层：`ShortLinkService`（短链）、`ConfigStorageService`（base config 存储，默认 30 天 TTL）
 - Node/Vercel 优先级：Redis > Upstash/Vercel KV > 内存兜底；`DISABLE_MEMORY_KV=true` 关闭兜底
-- Cloudflare 用 `wrangler.toml` 的 `SUBLINK_KV` 与 `ASSETS` binding
+- Cloudflare 通过 Dashboard 绑定 `SUBLINK_KV` namespace，`ASSETS` binding 在 wrangler.toml 的 `[assets]` 段配置
 
 环境变量：`REDIS_URL` / `REDIS_HOST`+`REDIS_PORT` / `REDIS_USERNAME` / `REDIS_PASSWORD` / `REDIS_TLS` / `REDIS_KEY_PREFIX`、`KV_REST_API_URL`+`KV_REST_API_TOKEN`、`CONFIG_TTL_SECONDS`、`SHORT_LINK_TTL_SECONDS`、`STATIC_DIR`、`PORT`。
 
