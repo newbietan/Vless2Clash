@@ -103,7 +103,15 @@ export class ConfigStorageService {
                 const fullMeta = await kv.get(`meta:${item.id}`);
                 if (fullMeta) {
                     try {
-                        configs.push(JSON.parse(fullMeta));
+                        const meta = JSON.parse(fullMeta);
+                        // Get original vless links for vless type
+                        if (item.type === 'vless') {
+                            const vlessLinks = await kv.get(item.id);
+                            if (vlessLinks) {
+                                meta.vlessLinks = vlessLinks;
+                            }
+                        }
+                        configs.push(meta);
                     } catch {
                         configs.push(item);
                     }

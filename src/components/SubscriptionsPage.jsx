@@ -148,6 +148,16 @@ export const SubscriptionsPage = () => {
                             
                             html += '</div></div>';
                             
+                            // Original VLESS Links
+                            if (config.vlessLinks) {
+                                html += '<div class="px-4 pb-4">';
+                                html += '<div class="text-xs text-on-surface-variant uppercase tracking-wide mb-2">原始 VLESS 链接</div>';
+                                html += '<div class="relative">';
+                                html += '<textarea readonly class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-xs font-mono text-on-surface-variant resize-y min-h-[80px] max-h-[200px]" id="vless-links-' + config.id + '">' + config.vlessLinks + '</textarea>';
+                                html += '<button onclick="copyVlessLinks(\\'' + config.id + '\\')" class="absolute top-2 right-2 bg-primary text-white px-2 py-1 rounded text-[10px] hover:bg-primary/90">复制</button>';
+                                html += '</div></div>';
+                            }
+                            
                             // Subscription URL
                             html += '<div class="px-4 pb-4">';
                             html += '<div class="text-xs text-on-surface-variant uppercase tracking-wide mb-2">订阅链接</div>';
@@ -175,6 +185,14 @@ export const SubscriptionsPage = () => {
                 function copyUrl(url) {
                     navigator.clipboard.writeText(url);
                     alert('已复制到剪贴板');
+                }
+
+                function copyVlessLinks(configId) {
+                    const textarea = document.getElementById('vless-links-' + configId);
+                    if (textarea) {
+                        navigator.clipboard.writeText(textarea.value);
+                        alert('VLESS 链接已复制到剪贴板');
+                    }
                 }
 
                 async function deleteConfig(id) {
