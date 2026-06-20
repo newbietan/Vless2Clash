@@ -15,15 +15,15 @@ import { normalizeRuntime } from '../runtime/runtimeConfig.js';
 
 export function createApp(bindings = {}) {
     const runtime = normalizeRuntime(bindings);
-    const adminPassword = runtime.config.adminPassword || process.env.ADMIN_PASSWORD || '';
-    
+    const adminPassword = runtime.config.adminPassword || '';
+
     const services = {
         configStorage: runtime.kv ? new ConfigStorageService(runtime.kv, { configTtlSeconds: runtime.config.configTtlSeconds }) : null,
         auth: new AuthService(runtime.kv, adminPassword),
-        turnstile: new TurnstileService(runtime.config.turnstileSecretKey || process.env.TURNSTILE_SECRET_KEY || '')
+        turnstile: new TurnstileService(runtime.config.turnstileSecretKey || '')
     };
 
-    const turnstileSitekey = runtime.config.turnstileSitekey || process.env.TURNSTILE_SITEKEY || '';
+    const turnstileSitekey = runtime.config.turnstileSitekey || '';
 
     const app = new Hono();
 
