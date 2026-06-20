@@ -6,7 +6,7 @@
 
 基于 [Sublink Worker](https://github.com/7Sageer/sublink-worker) 重构
 
-**一键转换 · 自动去重 · 终端风格 UI**
+**一键转换 · 自动去重 · 白蓝终端风格 UI**
 
 [![Stars](https://img.shields.io/github/stars/newbietan/Vless2Clash?style=flat&logo=github)](https://github.com/newbietan/Vless2Clash/stargazers)
 [![License](https://img.shields.io/github/license/newbietan/Vless2Clash?style=flat)](LICENSE)
@@ -54,8 +54,8 @@
 - **VLESS 协议解析**：支持 TLS / Reality / XHTTP 等传输方式，兼容各类 VLESS 链接格式。
 - **节点去重**：基于 `server:port:uuid` 自动识别并去除重复节点。
 - **Clash YAML 输出**：使用 GEOSITE / GEOIP 内置规则，无需下载额外规则集。
-- **订阅管理**：保存、查看、删除订阅，支持展开查看节点详情，一键复制订阅链接。
-- **终端风格 UI**：现代化终端风格界面设计，沉浸式操作体验。
+- **订阅管理**：保存、查看、删除订阅，支持展开查看节点详情（展示传输方式和安全协议），一键复制订阅链接，搜索过滤功能。
+- **终端风格 UI**：白蓝配色的终端窗口界面，侧边栏导航，macOS 风格交通灯按钮（红点为退出），Material Design 3 色彩体系。
 
 ## 快速部署
 
@@ -167,7 +167,7 @@ src/
 ├── builders/
 │   └── SimpleClashConfigBuilder.js  # Clash 配置生成
 ├── components/
-│   ├── Layout.jsx              # 终端风格布局
+│   ├── Layout.jsx              # 白蓝终端风格布局（侧边栏导航）
 │   ├── LoginPage.jsx           # 登录页面
 │   ├── DashboardPage.jsx       # 仪表盘
 │   └── SubscriptionsPage.jsx   # 订阅管理
@@ -180,6 +180,7 @@ src/
 │   ├── authService.js          # 认证服务
 │   ├── configStorageService.js # 配置存储
 │   └── turnstileService.js     # Turnstile 验证
+├── constants.js                # 应用常量
 ├── utils.js                    # 工具函数
 └── worker.jsx                  # Cloudflare Workers 入口
 ```
