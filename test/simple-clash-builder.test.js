@@ -208,7 +208,7 @@ describe('Page routes', () => {
         const res = await app.request('http://example.com/');
         expect(res.status).toBe(200);
         const html = await res.text();
-        expect(html).toContain('多平台VLESS订阅聚合平台');
+        expect(html).toContain('仪表盘');
         expect(html).toContain('输入 VLESS 链接');
     });
 
