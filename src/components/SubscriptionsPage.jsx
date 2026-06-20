@@ -13,9 +13,9 @@ export const SubscriptionsPage = () => {
                 <div class="flex gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">search</span>
-                        <input id="search-input" class="w-full bg-[#1A1A1A] border border-[#444444] text-on-surface font-code-md text-code-md py-2 pl-10 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50 transition-colors" placeholder="> 搜索节点..." type="text" />
+                        <input id="search-input" class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-code-md text-code-md py-2 pl-10 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50 transition-colors" placeholder="> 搜索节点..." type="text" />
                     </div>
-                    <a href="/" class="bg-primary text-on-primary-fixed-variant px-4 py-2 font-code-md text-label-sm uppercase tracking-wider flex items-center gap-2 hover:bg-primary-fixed transition-colors shadow-[0_0_15px_rgba(173,198,255,0.4)]">
+                    <a href="/" class="bg-primary text-on-primary px-4 py-2 font-code-md text-label-sm uppercase tracking-wider flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                         新建订阅
                     </a>
@@ -174,7 +174,7 @@ export const SubscriptionsPage = () => {
 
                         // Expanded Detail View
                         if (isExpanded) {
-                            html += '<div class="border-t border-[#333333] bg-[#0A0A0A] p-4 m-2 rounded relative">';
+                            html += '<div class="border-t border-outline-variant bg-surface-container-low p-4 m-2 rounded relative">';
 
                             // Node details header
                             html += '<div class="flex justify-between items-center mb-4">';

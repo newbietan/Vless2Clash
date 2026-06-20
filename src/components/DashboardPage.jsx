@@ -31,7 +31,7 @@ export const DashboardPage = () => {
                         </div>
                     </div>
                     <textarea
-                        class="w-full h-48 bg-[#1A1A1A] border border-[#444444] rounded p-3 font-code-md text-code-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y transition-colors"
+                        class="w-full h-48 bg-surface-container-lowest border border-outline-variant rounded p-3 font-code-md text-code-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y transition-colors"
                         id="vless-input"
                         placeholder={`vless://uuid@server:port?security=tls&type=ws&path=/ws#节点名
 vless://uuid2@server2:port?security=reality&pbk=xxx#节点名2`}
@@ -41,7 +41,7 @@ vless://uuid2@server2:port?security=reality&pbk=xxx#节点名2`}
                 {/* Convert Button */}
                 <button
                     id="convert-btn"
-                    class="w-full bg-primary text-on-primary-fixed-variant py-3 rounded-lg font-code-md text-label-sm uppercase tracking-wider font-bold shadow-[0_0_15px_rgba(173,198,255,0.4)] hover:bg-primary-fixed active:scale-[0.99] transition-all flex justify-center items-center gap-2"
+                    class="w-full bg-primary text-on-primary py-3 rounded-lg font-code-md text-label-sm uppercase tracking-wider font-bold shadow-sm hover:bg-primary/90 active:scale-[0.99] transition-all flex justify-center items-center gap-2"
                 >
                     <span class="material-symbols-outlined text-[20px]">transform</span>
                     转换为 Clash 配置

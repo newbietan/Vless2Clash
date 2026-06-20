@@ -7,57 +7,56 @@ export const LoginPage = ({ turnstileSitekey }) => {
 
     const tailwindConfig = `
         tailwind.config = {
-            darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "on-primary-fixed-variant": "#004395",
-                        "surface-variant": "#353535",
-                        "on-secondary-fixed-variant": "#005236",
-                        "background": "#131313",
-                        "tertiary": "#ffb95f",
-                        "secondary-container": "#00a572",
-                        "on-secondary-container": "#00311f",
+                        "on-primary-fixed-variant": "#001d36",
+                        "surface-variant": "#dfe2eb",
+                        "on-secondary-fixed-variant": "#001e13",
+                        "background": "#f8f9ff",
+                        "tertiary": "#7c5800",
+                        "secondary-container": "#9ef5c5",
+                        "on-secondary-container": "#002114",
                         "primary-fixed": "#d8e2ff",
-                        "on-surface-variant": "#c2c6d6",
-                        "error-container": "#93000a",
-                        "surface-container-low": "#1c1b1b",
-                        "surface-dim": "#131313",
-                        "on-primary": "#002e6a",
-                        "surface-container-highest": "#353535",
-                        "secondary-fixed-dim": "#4edea3",
-                        "outline-variant": "#424754",
-                        "on-primary-container": "#00285d",
-                        "on-background": "#e5e2e1",
-                        "tertiary-container": "#ca8100",
-                        "outline": "#8c909f",
-                        "surface-container": "#20201f",
-                        "inverse-primary": "#005ac2",
-                        "inverse-on-surface": "#313030",
-                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#44474f",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f3edf7",
+                        "surface-dim": "#d8d1de",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e0d9e6",
+                        "secondary-fixed-dim": "#82d8ab",
+                        "outline-variant": "#c4c6d0",
+                        "on-primary-container": "#001a42",
+                        "on-background": "#191c20",
+                        "tertiary-container": "#ffdea6",
+                        "outline": "#74777f",
+                        "surface-container": "#ece6f0",
+                        "inverse-primary": "#adc6ff",
+                        "inverse-on-surface": "#2f3033",
+                        "on-error-container": "#410002",
                         "primary-fixed-dim": "#adc6ff",
                         "on-primary-fixed": "#001a42",
-                        "surface": "#131313",
-                        "tertiary-fixed-dim": "#ffb95f",
-                        "error": "#ffb4ab",
-                        "on-tertiary-container": "#3e2400",
-                        "tertiary-fixed": "#ffddb8",
-                        "surface-bright": "#393939",
-                        "on-surface": "#e5e2e1",
-                        "on-tertiary-fixed": "#2a1700",
-                        "on-secondary-fixed": "#002113",
-                        "surface-tint": "#adc6ff",
-                        "secondary-fixed": "#6ffbbe",
-                        "surface-container-lowest": "#0e0e0e",
-                        "secondary": "#4edea3",
-                        "on-secondary": "#003824",
-                        "primary-container": "#4d8eff",
-                        "inverse-surface": "#e5e2e1",
-                        "on-error": "#690005",
-                        "on-tertiary": "#472a00",
-                        "on-tertiary-fixed-variant": "#653e00",
-                        "primary": "#adc6ff",
-                        "surface-container-high": "#2a2a2a"
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ddb255",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#271900",
+                        "tertiary-fixed": "#ffdea6",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface": "#191c20",
+                        "on-tertiary-fixed": "#271900",
+                        "on-secondary-fixed": "#002114",
+                        "surface-tint": "#4d67b1",
+                        "secondary-fixed": "#9ef5c5",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#006d3b",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#d8e2ff",
+                        "inverse-surface": "#2f3033",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#5c4200",
+                        "primary": "#4d67b1",
+                        "surface-container-high": "#e6e0ec"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -97,22 +96,22 @@ export const LoginPage = ({ turnstileSitekey }) => {
 
     const styles = `
         body {
-            background-color: #0A0A0A;
-            background-image: radial-gradient(circle at 50% 50%, rgba(30, 30, 30, 1) 0%, rgba(10, 10, 10, 1) 100%);
+            background-color: #f0f0f5;
+            background-image: radial-gradient(circle at 50% 50%, rgba(200, 200, 220, 0.3) 0%, rgba(240, 240, 245, 1) 100%);
         }
         .terminal-window {
-            box-shadow: 0 0 40px rgba(173, 198, 255, 0.1);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
         }
         .glow-btn {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 2px 8px rgba(77, 103, 177, 0.3);
         }
         .glow-btn:hover {
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+            box-shadow: 0 4px 16px rgba(77, 103, 177, 0.4);
         }
     `;
 
     return (
-        <html class="dark" lang="zh-CN">
+        <html lang="zh-CN">
             <head>
                 <meta charset="utf-8" />
                 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -126,7 +125,7 @@ export const LoginPage = ({ turnstileSitekey }) => {
                 <style dangerouslySetInnerHTML={{ __html: styles }} />
             </head>
             <body class="min-h-screen flex items-center justify-center p-4 text-on-surface font-body-md">
-                <div class="terminal-window w-full max-w-md bg-[#1A1A1A] border border-[#333333] rounded-xl overflow-hidden relative z-10 flex flex-col">
+                <div class="terminal-window w-full max-w-md bg-white border border-outline-variant rounded-xl overflow-hidden relative z-10 flex flex-col">
                     {/* TopAppBar */}
                     <div class="flex justify-between items-center w-full px-window-padding h-12 bg-surface-container-low border-b border-outline-variant">
                         <div class="flex space-x-2">
@@ -154,7 +153,7 @@ export const LoginPage = ({ turnstileSitekey }) => {
                                     type="password"
                                     id="password"
                                     autocomplete="current-password"
-                                    class="w-full bg-[#131313] border border-[#444444] rounded-DEFAULT py-3 pl-8 pr-4 text-on-surface font-code-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                    class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT py-3 pl-8 pr-4 text-on-surface font-code-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                                     placeholder="请输入密码"
                                 />
                             </div>
@@ -166,7 +165,7 @@ export const LoginPage = ({ turnstileSitekey }) => {
                                 </div>
                             )}
                             {!hasTurnstile && (
-                                <div class="w-full h-16 bg-[#222222] border border-[#444444] rounded-DEFAULT flex items-center justify-center">
+                                <div class="w-full h-16 bg-surface-container border border-outline-variant rounded-DEFAULT flex items-center justify-center">
                                     <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
                                         <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shield</span>
                                         <span>人机验证安全检查</span>
@@ -174,13 +173,13 @@ export const LoginPage = ({ turnstileSitekey }) => {
                                 </div>
                             )}
 
-                            <div id="error-msg" class="hidden text-error text-sm bg-error-container/20 p-3 rounded border border-error/30">
+                            <div id="error-msg" class="hidden text-error text-sm bg-error-container/30 p-3 rounded border border-error/30">
                             </div>
 
                             <button
                                 type="submit"
                                 id="submit-btn"
-                                class="w-full bg-[#3B82F6] hover:bg-blue-600 text-white font-code-md text-code-md font-bold py-3 rounded-DEFAULT transition-all duration-200 glow-btn flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                class="w-full bg-primary hover:bg-primary/90 text-on-primary font-code-md text-code-md font-bold py-3 rounded-DEFAULT transition-all duration-200 glow-btn flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={hasTurnstile}
                             >
                                 <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
@@ -190,7 +189,7 @@ export const LoginPage = ({ turnstileSitekey }) => {
                     </div>
 
                     {/* Status Bar Footer */}
-                    <div class="w-full px-window-padding py-2 bg-surface-container-lowest/50 border-t border-outline-variant backdrop-blur-xl flex justify-between items-center mt-auto">
+                    <div class="w-full px-window-padding py-2 bg-surface-container-low border-t border-outline-variant flex justify-between items-center mt-auto">
                         <span class="text-label-sm font-code-md text-on-surface-variant/60">SYS_STATUS: PENDING_AUTH</span>
                     </div>
                 </div>
