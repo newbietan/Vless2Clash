@@ -79,6 +79,16 @@ export function createApp(bindings = {}) {
         await next();
     };
 
+    // API auth middleware - returns 401 JSON for API endpoints
+    const requireApiAuth = async (c, next) => {
+        const token = c.req.header('Authorization')?.replace('Bearer ', '');
+        const isValid = await services.auth.verifyToken(token);
+        if (!isValid) {
+            return c.json({ error: 'Unauthorized' }, 401);
+        }
+        await next();
+    };
+
     // Protected pages
     app.get('/', requireAuth, (c) => {
         return c.html(
@@ -97,16 +107,8 @@ export function createApp(bindings = {}) {
     });
 
     // API: Save VLESS config (requires auth)
-    app.post('/config', async (c) => {
+    app.post('/config', requireApiAuth, async (c) => {
         try {
-            // Verify auth
-            const token = c.req.header('Authorization')?.replace('Bearer ', '') || 
-                          getCookie(c, 'auth_token');
-            const isValid = await services.auth.verifyToken(token);
-            if (!isValid) {
-                return c.text('Unauthorized', 401);
-            }
-
             const body = await c.req.json();
             const { vlessLinks, name, nodes } = body;
             if (!vlessLinks || typeof vlessLinks !== 'string') {
@@ -148,14 +150,8 @@ export function createApp(bindings = {}) {
     });
 
     // API: List subscriptions (requires auth)
-    app.get('/api/subscriptions', async (c) => {
+    app.get('/api/subscriptions', requireApiAuth, async (c) => {
         try {
-            const token = c.req.header('Authorization')?.replace('Bearer ', '');
-            const isValid = await services.auth.verifyToken(token);
-            if (!isValid) {
-                return c.json({ error: 'Unauthorized' }, 401);
-            }
-
             const storage = requireConfigStorage(services.configStorage);
             const configs = await storage.listConfigs('vless');
             return c.json(configs);
@@ -165,14 +161,8 @@ export function createApp(bindings = {}) {
     });
 
     // API: Delete subscription (requires auth)
-    app.delete('/api/subscriptions/:id', async (c) => {
+    app.delete('/api/subscriptions/:id', requireApiAuth, async (c) => {
         try {
-            const token = c.req.header('Authorization')?.replace('Bearer ', '');
-            const isValid = await services.auth.verifyToken(token);
-            if (!isValid) {
-                return c.text('Unauthorized', 401);
-            }
-
             const configId = c.req.param('id');
             const storage = requireConfigStorage(services.configStorage);
             await storage.deleteConfig(configId);
@@ -183,14 +173,8 @@ export function createApp(bindings = {}) {
     });
 
     // API: Parse VLESS links and return node info (requires auth)
-    app.post('/api/parse-nodes', async (c) => {
+    app.post('/api/parse-nodes', requireApiAuth, async (c) => {
         try {
-            const token = c.req.header('Authorization')?.replace('Bearer ', '');
-            const isValid = await services.auth.verifyToken(token);
-            if (!isValid) {
-                return c.json({ error: 'Unauthorized' }, 401);
-            }
-
             const { vlessLinks } = await c.req.json();
             if (!vlessLinks) {
                 return c.json({ error: 'Missing vlessLinks' }, 400);
