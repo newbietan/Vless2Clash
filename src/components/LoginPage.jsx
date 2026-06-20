@@ -183,6 +183,7 @@ export const LoginPage = ({ turnstileSitekey }) => {
                     {/* Status Bar Footer */}
                     <div class="w-full px-window-padding py-2 bg-surface-container-low border-t border-outline-variant flex justify-between items-center mt-auto">
                         <span class="text-label-sm font-code-md text-on-surface-variant/60">SYS_STATUS: PENDING_AUTH</span>
+                        <a class="text-label-sm font-code-md text-on-surface-variant/60 hover:text-primary transition-opacity" href="https://github.com/newbietan/Vless2Clash" target="_blank" rel="noopener noreferrer">GitHub</a>
                     </div>
                 </div>
 
