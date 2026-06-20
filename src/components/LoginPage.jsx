@@ -11,52 +11,52 @@ export const LoginPage = ({ turnstileSitekey }) => {
                 extend: {
                     "colors": {
                         "on-primary-fixed-variant": "#001d36",
-                        "surface-variant": "#dfe2eb",
+                        "surface-variant": "#dce4ef",
                         "on-secondary-fixed-variant": "#001e13",
-                        "background": "#f8f9ff",
+                        "background": "#f5f7fa",
                         "tertiary": "#7c5800",
                         "secondary-container": "#9ef5c5",
                         "on-secondary-container": "#002114",
-                        "primary-fixed": "#d8e2ff",
-                        "on-surface-variant": "#44474f",
+                        "primary-fixed": "#d4e4ff",
+                        "on-surface-variant": "#424850",
                         "error-container": "#ffdad6",
-                        "surface-container-low": "#f3edf7",
-                        "surface-dim": "#d8d1de",
+                        "surface-container-low": "#f0f4f8",
+                        "surface-dim": "#dce3ec",
                         "on-primary": "#ffffff",
-                        "surface-container-highest": "#e0d9e6",
+                        "surface-container-highest": "#d4dee8",
                         "secondary-fixed-dim": "#82d8ab",
-                        "outline-variant": "#c4c6d0",
+                        "outline-variant": "#c8d4e0",
                         "on-primary-container": "#001a42",
-                        "on-background": "#191c20",
+                        "on-background": "#1a1c20",
                         "tertiary-container": "#ffdea6",
-                        "outline": "#74777f",
-                        "surface-container": "#ece6f0",
-                        "inverse-primary": "#adc6ff",
+                        "outline": "#708090",
+                        "surface-container": "#e8eef5",
+                        "inverse-primary": "#a0c4ff",
                         "inverse-on-surface": "#2f3033",
                         "on-error-container": "#410002",
-                        "primary-fixed-dim": "#adc6ff",
+                        "primary-fixed-dim": "#a0c4ff",
                         "on-primary-fixed": "#001a42",
-                        "surface": "#f8f9ff",
+                        "surface": "#f5f7fa",
                         "tertiary-fixed-dim": "#ddb255",
                         "error": "#ba1a1a",
                         "on-tertiary-container": "#271900",
                         "tertiary-fixed": "#ffdea6",
-                        "surface-bright": "#f8f9ff",
-                        "on-surface": "#191c20",
+                        "surface-bright": "#f5f7fa",
+                        "on-surface": "#1a1c20",
                         "on-tertiary-fixed": "#271900",
                         "on-secondary-fixed": "#002114",
-                        "surface-tint": "#4d67b1",
+                        "surface-tint": "#3b7dd8",
                         "secondary-fixed": "#9ef5c5",
                         "surface-container-lowest": "#ffffff",
                         "secondary": "#006d3b",
                         "on-secondary": "#ffffff",
-                        "primary-container": "#d8e2ff",
+                        "primary-container": "#d4e4ff",
                         "inverse-surface": "#2f3033",
                         "on-error": "#ffffff",
                         "on-tertiary": "#ffffff",
                         "on-tertiary-fixed-variant": "#5c4200",
-                        "primary": "#4d67b1",
-                        "surface-container-high": "#e6e0ec"
+                        "primary": "#3b7dd8",
+                        "surface-container-high": "#dce4ee"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -96,17 +96,18 @@ export const LoginPage = ({ turnstileSitekey }) => {
 
     const styles = `
         body {
-            background-color: #f0f0f5;
-            background-image: radial-gradient(circle at 50% 50%, rgba(200, 200, 220, 0.3) 0%, rgba(240, 240, 245, 1) 100%);
+            background-color: #f0f2f5;
+            background-image: radial-gradient(circle at 50% 50%, rgba(200, 215, 235, 0.3) 0%, rgba(240, 242, 245, 1) 100%);
         }
         .terminal-window {
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            border: 1px solid #bcd0e8;
+            box-shadow: 0 4px 24px rgba(59, 125, 216, 0.1);
         }
         .glow-btn {
-            box-shadow: 0 2px 8px rgba(77, 103, 177, 0.3);
+            box-shadow: 0 2px 8px rgba(59, 125, 216, 0.3);
         }
         .glow-btn:hover {
-            box-shadow: 0 4px 16px rgba(77, 103, 177, 0.4);
+            box-shadow: 0 4px 16px rgba(59, 125, 216, 0.4);
         }
     `;
 
