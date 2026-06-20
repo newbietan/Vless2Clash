@@ -199,8 +199,8 @@ export const SubscriptionsPage = () => {
                                     html += '<span class="text-label-sm font-code-md text-on-surface-variant/60 mt-1">' + node.server + ':' + node.port + '</span>';
                                     html += '</div>';
                                     html += '<div class="flex items-center gap-2">';
-                                    html += '<span class="px-2 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold uppercase tracking-tighter">VLESS</span>';
                                     html += '<span class="px-2 py-0.5 rounded bg-' + transportColor + '/10 border border-' + transportColor + '/30 text-' + transportColor + ' text-[10px] font-bold uppercase tracking-tighter">' + transportLabel + '</span>';
+                                    html += '<span class="px-2 py-0.5 rounded bg-' + secColor + '/10 border border-' + secColor + '/30 text-' + secColor + ' text-[10px] font-bold uppercase tracking-tighter">' + secLabel + '</span>';
                                     html += '</div></div>';
                                 });
                                 html += '</div>';
