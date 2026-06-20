@@ -164,14 +164,6 @@ export const LoginPage = ({ turnstileSitekey }) => {
                                     <div id="turnstile-widget" class="cf-turnstile" data-sitekey={turnstileSitekey} data-callback="onTurnstileSuccess"></div>
                                 </div>
                             )}
-                            {!hasTurnstile && (
-                                <div class="w-full h-16 bg-surface-container border border-outline-variant rounded-DEFAULT flex items-center justify-center">
-                                    <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
-                                        <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0" }}>shield</span>
-                                        <span>人机验证安全检查</span>
-                                    </div>
-                                </div>
-                            )}
 
                             <div id="error-msg" class="hidden text-error text-sm bg-error-container/30 p-3 rounded border border-error/30">
                             </div>
