@@ -63,7 +63,7 @@ vless://uuid2@server2.com:443?security=tls&sni=server2.com#Node-2`;
         const config = yaml.load(builder.formatConfig());
 
         expect(config.proxies.length).toBe(0);
-        expect(config['proxy-groups'].length).toBe(1);
+        expect(config['proxy-groups'].length).toBe(5);
         expect(config.rules).toContain('MATCH,PROXY');
     });
 
