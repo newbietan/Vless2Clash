@@ -148,22 +148,22 @@ export class SimpleClashConfigBuilder {
             {
                 type: 'select',
                 name: 'Streaming',
-                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+                proxies: [...proxyNames, 'DIRECT']
             },
             {
                 type: 'select',
                 name: 'AI',
-                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+                proxies: [...proxyNames, 'DIRECT']
             },
             {
                 type: 'select',
                 name: 'Microsoft',
-                proxies: ['DIRECT', 'PROXY', ...proxyNames]
+                proxies: ['DIRECT', ...proxyNames]
             },
             {
                 type: 'select',
                 name: 'Telegram',
-                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+                proxies: [...proxyNames, 'DIRECT']
             }
         );
     }
