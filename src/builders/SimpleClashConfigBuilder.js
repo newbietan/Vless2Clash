@@ -7,6 +7,17 @@ const SIMPLE_CLASH_CONFIG = {
     'allow-lan': true,
     'mode': 'Rule',
     'log-level': 'info',
+    'unified-delay': true,
+    'tcp-concurrent': true,
+    'sniffer': {
+        'enable': true,
+        'sniff': {
+            'HTTP': { 'ports': [80, 8080] },
+            'TLS': { 'ports': [443, 8443] },
+            'QUIC': { 'ports': [443, 8443] }
+        },
+        'skip-domain': ['Mijia Cloud']
+    },
     'proxies': [],
     'proxy-groups': []
 };
@@ -125,26 +136,47 @@ export class SimpleClashConfigBuilder {
 
     addProxyGroups() {
         const proxyNames = this.config.proxies.map(p => p.name);
-        
-        // Main proxy group with DIRECT option
-        this.config['proxy-groups'].push({
-            type: 'select',
-            name: 'PROXY',
-            proxies: [...proxyNames, 'DIRECT'],
-            lazy: false
-        });
+        const subGroups = ['Streaming', 'AI', 'Microsoft', 'Telegram'];
+
+        this.config['proxy-groups'].push(
+            {
+                type: 'select',
+                name: 'PROXY',
+                proxies: [...proxyNames, ...subGroups, 'DIRECT'],
+                lazy: false
+            },
+            {
+                type: 'select',
+                name: 'Streaming',
+                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+            },
+            {
+                type: 'select',
+                name: 'AI',
+                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+            },
+            {
+                type: 'select',
+                name: 'Microsoft',
+                proxies: ['DIRECT', 'PROXY', ...proxyNames]
+            },
+            {
+                type: 'select',
+                name: 'Telegram',
+                proxies: ['PROXY', ...proxyNames, 'DIRECT']
+            }
+        );
     }
 
     addRules() {
         this.config.rules = [
-            // Private network
             'GEOSITE,private,DIRECT',
             'GEOIP,private,DIRECT,no-resolve',
-            // China domains
+            'GEOSITE,category-ads-all,REJECT',
             'GEOSITE,cn,DIRECT',
             'GEOSITE,apple-cn,DIRECT',
             'GEOSITE,google-cn,DIRECT',
-            // Microsoft
+            'GEOSITE,category-games@cn,DIRECT',
             'DOMAIN-SUFFIX,microsoft.com,DIRECT',
             'DOMAIN-SUFFIX,windows.com,DIRECT',
             'DOMAIN-SUFFIX,windowsupdate.com,DIRECT',
@@ -163,9 +195,6 @@ export class SimpleClashConfigBuilder {
             'DOMAIN-SUFFIX,xbox.com,DIRECT',
             'DOMAIN-SUFFIX,xboxlive.com,DIRECT',
             'DOMAIN-SUFFIX,gamepass.com,DIRECT',
-            // China games
-            'GEOSITE,category-games@cn,DIRECT',
-            // China apps
             'DOMAIN-SUFFIX,qq.com,DIRECT',
             'DOMAIN-SUFFIX,weixin.qq.com,DIRECT',
             'DOMAIN-SUFFIX,taobao.com,DIRECT',
@@ -214,9 +243,28 @@ export class SimpleClashConfigBuilder {
             'DOMAIN-SUFFIX,cctv.com,DIRECT',
             'DOMAIN-SUFFIX,12306.cn,DIRECT',
             'DOMAIN-SUFFIX,ctrip.com,DIRECT',
-            // China IPs
             'GEOIP,CN,DIRECT,no-resolve',
-            // Default
+            'GEOSITE,telegram,Telegram',
+            'GEOSITE,openai,AI',
+            'DOMAIN-SUFFIX,anthropic.com,AI',
+            'DOMAIN-SUFFIX,claude.ai,AI',
+            'DOMAIN-SUFFIX,oaistatic.com,AI',
+            'DOMAIN-SUFFIX,oaiusercontent.com,AI',
+            'DOMAIN-SUFFIX,cursor.sh,AI',
+            'DOMAIN-SUFFIX,cursor.com,AI',
+            'GEOSITE,google,PROXY',
+            'GEOSITE,github,PROXY',
+            'GEOSITE,twitter,PROXY',
+            'GEOSITE,facebook,PROXY',
+            'GEOSITE,instagram,PROXY',
+            'GEOSITE,reddit,PROXY',
+            'GEOSITE,discord,PROXY',
+            'GEOSITE,whatsapp,PROXY',
+            'GEOSITE,netflix,Streaming',
+            'GEOSITE,disney,Streaming',
+            'GEOSITE,spotify,Streaming',
+            'GEOSITE,youtube,Streaming',
+            'GEOSITE,geolocation-!cn,PROXY',
             'MATCH,PROXY'
         ];
     }
