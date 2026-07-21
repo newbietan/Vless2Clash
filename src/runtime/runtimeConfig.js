@@ -3,6 +3,7 @@
  * @property {(key: string) => Promise<string | null>} get
  * @property {(key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>} put
  * @property {(key: string) => Promise<void>} delete
+ * @property {(prefix: string) => Promise<string[]>} [list]
  */
 
 /**
@@ -31,7 +32,7 @@ const DEFAULTS = {
  * Normalize optional runtime bindings and provide safe defaults.
  *
  * @param {RuntimeBindings | undefined} runtime
- * @returns {{ kv: KeyValueStore | null, assetFetcher: AssetFetcher | null, logger: Console, config: RuntimeConfig & { configTtlSeconds: number, shortLinkTtlSeconds: number | null, adminPassword: string, turnstileSitekey: string, turnstileSecretKey: string } }}
+ * @returns {{ kv: KeyValueStore | null, assetFetcher: AssetFetcher | null, logger: Console, config: RuntimeConfig & { configTtlSeconds: number, shortLinkTtlSeconds: number | null, adminPassword: string, allowUnauthenticated: boolean, turnstileSitekey: string, turnstileSecretKey: string } }}
  */
 export function normalizeRuntime(runtime = {}) {
     return {
@@ -42,6 +43,7 @@ export function normalizeRuntime(runtime = {}) {
             configTtlSeconds: runtime.config?.configTtlSeconds ?? DEFAULTS.configTtlSeconds,
             shortLinkTtlSeconds: runtime.config?.shortLinkTtlSeconds ?? null,
             adminPassword: runtime.config?.adminPassword ?? '',
+            allowUnauthenticated: runtime.config?.allowUnauthenticated === true,
             turnstileSitekey: runtime.config?.turnstileSitekey ?? '',
             turnstileSecretKey: runtime.config?.turnstileSecretKey ?? ''
         }

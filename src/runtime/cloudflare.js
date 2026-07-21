@@ -7,6 +7,7 @@ export function createCloudflareRuntime(env) {
         logger: console,
         config: {
             adminPassword: env?.ADMIN_PASSWORD || '',
+            allowUnauthenticated: env?.DISABLE_AUTH === 'true',
             turnstileSitekey: env?.TURNSTILE_SITEKEY || '',
             turnstileSecretKey: env?.TURNSTILE_SECRET_KEY || ''
         }

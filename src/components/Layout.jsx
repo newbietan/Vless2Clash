@@ -299,10 +299,17 @@ export const Layout = ({ title, children, activePage }) => {
 
                     const logoutBtn = document.getElementById('logout-btn');
                     if (logoutBtn) {
-                        logoutBtn.addEventListener('click', function() {
-                            localStorage.removeItem('auth_token');
-                            document.cookie = 'auth_token=; path=/; max-age=0';
-                            window.location.href = '/login';
+                        logoutBtn.addEventListener('click', async function() {
+                            const token = localStorage.getItem('auth_token') || '';
+                            try {
+                                await fetch('/api/logout', {
+                                    method: 'POST',
+                                    headers: { 'Authorization': 'Bearer ' + token }
+                                });
+                            } finally {
+                                localStorage.removeItem('auth_token');
+                                window.location.href = '/login';
+                            }
                         });
                     }
                 ` }} />

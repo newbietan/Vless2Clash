@@ -244,12 +244,25 @@ export function deepCopy(obj) {
 }
 
 export function generateWebPath(length = PATH_LENGTH) {
-	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-	let result = ''
-	for (let i = 0; i < length; i++) {
-		result += characters.charAt(Math.floor(Math.random() * characters.length))
+	if (!Number.isInteger(length) || length <= 0) {
+		throw new TypeError('Path length must be a positive integer');
 	}
-	return result
+
+	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	const maxUnbiasedValue = 256 - (256 % characters.length);
+	let result = '';
+
+	while (result.length < length) {
+		const bytes = new Uint8Array(length - result.length);
+		globalThis.crypto.getRandomValues(bytes);
+		for (const byte of bytes) {
+			if (byte < maxUnbiasedValue) {
+				result += characters[byte % characters.length];
+			}
+		}
+	}
+
+	return result;
 }
 
 export function parseServerInfo(serverInfo) {
@@ -289,10 +302,11 @@ export function parseUrlParams(url) {
 export function createTlsConfig(params) {
 	let tls = { enabled: false };
 	if (params.security && params.security !== 'none') {
+		const insecureValue = params.allowInsecure ?? params.insecure ?? params.allow_insecure;
 		tls = {
 			enabled: true,
 			server_name: params.sni || params.host,
-			insecure: !!params?.allowInsecure || !!params?.insecure || !!params?.allow_insecure,
+			insecure: parseBool(insecureValue, false),
 			// utls: {
 			//   enabled: true,
 			//   fingerprint: "chrome"
@@ -313,6 +327,7 @@ export function createTransportConfig(params) {
 	return {
 		type: params.type,
 		path: params.path ?? undefined,
+		mode: params.mode ?? undefined,
 		...(params.host && { 'headers': { 'host': params.host } }),
 		...(params.type === 'grpc' && {
 			service_name: params.serviceName ?? undefined,

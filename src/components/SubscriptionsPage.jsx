@@ -140,7 +140,7 @@ export const SubscriptionsPage = () => {
                         // Name
                         html += '<div class="w-1/3 flex items-center gap-3">';
                         html += '<div class="w-2 h-2 rounded-full ' + (isActive ? 'bg-secondary shadow-[0_0_6px_rgba(78,222,163,0.6)]' : 'bg-error') + '"></div>';
-                        html += '<span class="text-body-lg font-body-lg text-on-surface font-semibold truncate' + (isActive ? '' : ' line-through') + '">' + (config.name || config.id) + '</span>';
+                        html += '<span class="text-body-lg font-body-lg text-on-surface font-semibold truncate' + (isActive ? '' : ' line-through') + '">' + escapeHtml(config.name || config.id) + '</span>';
                         html += '</div>';
 
                         // Node count
@@ -165,6 +165,8 @@ export const SubscriptionsPage = () => {
 
                         // Expand icon + actions
                         html += '<div class="w-12 flex justify-end items-center gap-1">';
+                        html += '<a href="/?edit=' + config.id + '" onclick="event.stopPropagation()" class="text-on-surface-variant hover:text-primary p-1 rounded transition-colors" title="编辑">';
+                        html += '<span class="material-symbols-outlined text-[18px]">edit</span></a>';
                         html += '<button onclick="event.stopPropagation(); deleteConfig(\\'' + config.id + '\\')" class="text-on-surface-variant hover:text-error p-1 rounded transition-colors" title="删除">';
                         html += '<span class="material-symbols-outlined text-[18px]">delete</span></button>';
                         html += '<span class="material-symbols-outlined text-' + (isExpanded ? 'primary' : 'on-surface-variant') + ' text-[24px]">' + (isExpanded ? 'expand_less' : 'expand_more') + '</span>';
@@ -189,18 +191,18 @@ export const SubscriptionsPage = () => {
                                 html += '<div class="space-y-2 mb-6 overflow-y-auto max-h-48 pr-2">';
                                 nodes.forEach(node => {
                                     const secColor = (node.security === 'tls' || node.security === 'reality') ? 'primary' : 'outline';
-                                    const secLabel = (node.security || 'none').toUpperCase();
-                                    const transportLabel = (node.transport || 'tcp').toUpperCase();
+                                    const secLabel = String(node.security || 'none').toUpperCase();
+                                    const transportLabel = String(node.transport || 'tcp').toUpperCase();
                                     const transportColor = (node.transport === 'grpc' || node.transport === 'h2') ? 'tertiary' : 'secondary';
 
                                     html += '<div class="flex items-center justify-between p-2 border border-outline-variant/20 bg-surface-container-lowest/30 rounded group hover:border-primary/50 transition-colors">';
                                     html += '<div class="flex flex-col">';
-                                    html += '<span class="text-secondary-fixed-dim font-code-md">' + node.name + '</span>';
-                                    html += '<span class="text-label-sm font-code-md text-on-surface-variant/60 mt-1">' + node.server + ':' + node.port + '</span>';
+                                    html += '<span class="text-secondary-fixed-dim font-code-md">' + escapeHtml(node.name) + '</span>';
+                                    html += '<span class="text-label-sm font-code-md text-on-surface-variant/60 mt-1">' + escapeHtml(node.server) + ':' + escapeHtml(node.port) + '</span>';
                                     html += '</div>';
                                     html += '<div class="flex items-center gap-2">';
-                                    html += '<span class="px-2 py-0.5 rounded bg-' + transportColor + '/10 border border-' + transportColor + '/30 text-' + transportColor + ' text-[10px] font-bold uppercase tracking-tighter">' + transportLabel + '</span>';
-                                    html += '<span class="px-2 py-0.5 rounded bg-' + secColor + '/10 border border-' + secColor + '/30 text-' + secColor + ' text-[10px] font-bold uppercase tracking-tighter">' + secLabel + '</span>';
+                                    html += '<span class="px-2 py-0.5 rounded bg-' + transportColor + '/10 border border-' + transportColor + '/30 text-' + transportColor + ' text-[10px] font-bold uppercase tracking-tighter">' + escapeHtml(transportLabel) + '</span>';
+                                    html += '<span class="px-2 py-0.5 rounded bg-' + secColor + '/10 border border-' + secColor + '/30 text-' + secColor + ' text-[10px] font-bold uppercase tracking-tighter">' + escapeHtml(secLabel) + '</span>';
                                     html += '</div></div>';
                                 });
                                 html += '</div>';
@@ -241,7 +243,12 @@ export const SubscriptionsPage = () => {
                 }
 
                 function escapeHtml(str) {
-                    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    return String(str ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
                 }
 
                 function toggleExpand(id) {
@@ -293,9 +300,11 @@ export const SubscriptionsPage = () => {
                         return;
                     }
                     const filtered = allConfigs.filter(c => {
-                        const name = (c.name || c.id).toLowerCase();
+                        const name = String(c.name || c.id).toLowerCase();
                         const nodes = c.nodes || [];
-                        const nodeMatch = nodes.some(n => n.name.toLowerCase().includes(q) || n.server.toLowerCase().includes(q));
+                        const nodeMatch = nodes.some(n =>
+                            String(n.name || '').toLowerCase().includes(q) ||
+                            String(n.server || '').toLowerCase().includes(q));
                         return name.includes(q) || nodeMatch;
                     });
                     renderSubscriptions(filtered);

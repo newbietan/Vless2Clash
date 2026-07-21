@@ -228,7 +228,6 @@ export const LoginPage = ({ turnstileSitekey }) => {
 
                             const { token } = await res.json();
                             localStorage.setItem('auth_token', token);
-                            document.cookie = 'auth_token=' + token + '; path=/; max-age=86400';
                             window.location.href = '/';
                         } catch (err) {
                             errorMsg.textContent = '登录失败: ' + err.message;

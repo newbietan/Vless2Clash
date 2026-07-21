@@ -4,12 +4,14 @@
  */
 
 import { generateWebPath } from '../utils.js';
+import { MissingDependencyError } from './errors.js';
 
 export class AuthService {
     constructor(kv, password, options = {}) {
         this.kv = kv;
         this.password = password;
         this.sessionTtl = options.sessionTtl || 86400; // 24 hours
+        this.allowUnauthenticated = options.allowUnauthenticated === true;
     }
 
     /**
@@ -17,7 +19,9 @@ export class AuthService {
      */
     async login(password) {
         if (!this.password) {
-            // No password configured, allow access
+            if (!this.allowUnauthenticated) {
+                throw new MissingDependencyError('ADMIN_PASSWORD is not configured');
+            }
             return { token: 'no-auth', expiresAt: Date.now() + 86400000 };
         }
 
@@ -25,14 +29,16 @@ export class AuthService {
             throw new Error('密码错误');
         }
 
+        if (!this.kv) {
+            throw new MissingDependencyError('Authentication requires a KV store');
+        }
+
         const token = generateWebPath(32);
         const expiresAt = Date.now() + (this.sessionTtl * 1000);
 
-        if (this.kv) {
-            await this.kv.put(`session:${token}`, JSON.stringify({ expiresAt }), {
-                expirationTtl: this.sessionTtl
-            });
-        }
+        await this.kv.put(`session:${token}`, JSON.stringify({ expiresAt }), {
+            expirationTtl: this.sessionTtl
+        });
 
         return { token, expiresAt };
     }
@@ -42,20 +48,15 @@ export class AuthService {
      */
     async verifyToken(token) {
         if (!this.password) {
-            return true; // No password configured
+            return this.allowUnauthenticated;
         }
 
         if (!token) {
             return false;
         }
 
-        if (token === 'no-auth') {
-            return true;
-        }
-
         if (!this.kv) {
-            // No KV, check if token looks valid
-            return token.length === 32;
+            return false;
         }
 
         const session = await this.kv.get(`session:${token}`);
@@ -84,6 +85,6 @@ export class AuthService {
      * Check if auth is enabled
      */
     isAuthEnabled() {
-        return !!this.password;
+        return !this.allowUnauthenticated;
     }
 }

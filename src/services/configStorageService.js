@@ -50,7 +50,7 @@ export class ConfigStorageService {
         }
 
         const kv = this.ensureKv();
-        const configId = `${type}_${generateWebPath(8)}`;
+        const configId = `${type}_${generateWebPath(16)}`;
         const configString = this.serializeConfig(type, content);
 
         const ttlSeconds = this.options.configTtlSeconds;
@@ -88,71 +88,137 @@ export class ConfigStorageService {
         await this.removeFromIndex(configId);
     }
 
+    async getConfig(configId) {
+        const kv = this.ensureKv();
+        const metaStr = await kv.get(`meta:${configId}`);
+        if (!metaStr) return null;
+
+        try {
+            const meta = JSON.parse(metaStr);
+            if (meta.type === 'vless') {
+                const vlessLinks = await kv.get(configId);
+                if (!vlessLinks) return null;
+                meta.vlessLinks = vlessLinks;
+            }
+            return meta;
+        } catch {
+            return null;
+        }
+    }
+
+    async updateConfig(configId, content, name, nodes) {
+        const kv = this.ensureKv();
+        const existingMeta = await this.getConfigMeta(configId);
+        if (!existingMeta) {
+            throw new InvalidPayloadError('Config not found');
+        }
+
+        const ttlSeconds = this.options.configTtlSeconds;
+        const putOptions = ttlSeconds ? { expirationTtl: ttlSeconds } : undefined;
+
+        const configString = this.serializeConfig(existingMeta.type, content);
+        await kv.put(configId, configString, putOptions);
+
+        const nodeCount = Array.isArray(nodes) ? nodes.length :
+            (existingMeta.type === 'vless' ? content.split('\n').filter(l => l.trim().startsWith('vless://')).length : existingMeta.nodeCount);
+
+        const meta = {
+            ...existingMeta,
+            name: name || existingMeta.name,
+            nodeCount,
+            nodes: Array.isArray(nodes) ? nodes : existingMeta.nodes,
+            updatedAt: new Date().toISOString()
+        };
+        await kv.put(`meta:${configId}`, JSON.stringify(meta), putOptions);
+
+        await this.updateIndexEntry(configId, meta);
+
+        return configId;
+    }
+
     async listConfigs(type) {
         const kv = this.ensureKv();
-        const indexStr = await kv.get('config_index');
-        if (!indexStr) return [];
-        
-        try {
-            const index = JSON.parse(indexStr);
-            const configs = [];
-            
-            for (const item of index) {
-                if (type && item.type !== type) continue;
-                // Get full meta with nodes
-                const fullMeta = await kv.get(`meta:${item.id}`);
-                if (fullMeta) {
-                    try {
-                        const meta = JSON.parse(fullMeta);
-                        // Get original vless links for vless type
-                        if (item.type === 'vless') {
-                            const vlessLinks = await kv.get(item.id);
-                            if (vlessLinks) {
-                                meta.vlessLinks = vlessLinks;
-                            }
-                        }
-                        configs.push(meta);
-                    } catch {
-                        configs.push(item);
-                    }
-                } else {
-                    configs.push(item);
+        const index = await this.getIndexEntries();
+        const filtered = type ? index.filter(item => item.type === type) : index;
+
+        const configs = await Promise.all(filtered.map(async (item) => {
+            const fullMeta = await kv.get(`meta:${item.id}`);
+            if (!fullMeta) return null;
+
+            try {
+                const meta = JSON.parse(fullMeta);
+                if (item.type === 'vless') {
+                    const vlessLinks = await kv.get(item.id);
+                    if (!vlessLinks) return null;
+                    meta.vlessLinks = vlessLinks;
                 }
+                return meta;
+            } catch {
+                return null;
             }
-            
-            return configs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } catch {
-            return [];
-        }
+        }));
+
+        return configs
+            .filter(Boolean)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
     async addToIndex(configId, meta) {
         const kv = this.ensureKv();
-        const indexStr = await kv.get('config_index');
-        let index = [];
-        
-        try {
-            index = indexStr ? JSON.parse(indexStr) : [];
-        } catch {
-            index = [];
-        }
-        
-        index.push(meta);
-        await kv.put('config_index', JSON.stringify(index));
+        const summary = this.createIndexSummary(meta);
+        await kv.put(`index:${configId}`, JSON.stringify(summary), this.getPutOptions());
     }
 
     async removeFromIndex(configId) {
         const kv = this.ensureKv();
-        const indexStr = await kv.get('config_index');
-        if (!indexStr) return;
-        
-        try {
-            let index = JSON.parse(indexStr);
-            index = index.filter(item => item.id !== configId);
-            await kv.put('config_index', JSON.stringify(index));
-        } catch {
-            // Ignore
+        await kv.delete(`index:${configId}`);
+    }
+
+    async updateIndexEntry(configId, meta) {
+        const kv = this.ensureKv();
+        const summary = this.createIndexSummary(meta);
+        await kv.put(`index:${configId}`, JSON.stringify(summary), this.getPutOptions());
+    }
+
+    async getIndexEntries() {
+        const kv = this.ensureKv();
+        const entries = new Map();
+
+        if (typeof kv.list === 'function') {
+            const keys = await kv.list('index:');
+            const values = await Promise.all(keys.map(key => kv.get(key)));
+            for (const value of values) {
+                try {
+                    const item = JSON.parse(value);
+                    if (item?.id) entries.set(item.id, item);
+                } catch {
+                    // Invalid entries are ignored because the config metadata remains authoritative.
+                }
+            }
         }
+
+        const legacyIndex = await kv.get('config_index');
+        if (legacyIndex) {
+            try {
+                for (const item of JSON.parse(legacyIndex)) {
+                    if (item?.id && !entries.has(item.id)) entries.set(item.id, item);
+                }
+            } catch {
+                // Legacy index corruption must not hide valid per-config entries.
+            }
+        }
+
+        return Array.from(entries.values());
+    }
+
+    createIndexSummary(meta) {
+        const { id, type, name, nodeCount, createdAt } = meta;
+        return { id, type, name, nodeCount, createdAt };
+    }
+
+    getPutOptions() {
+        const ttlSeconds = this.options.configTtlSeconds;
+        return ttlSeconds ? { expirationTtl: ttlSeconds } : undefined;
     }
 
     serializeConfig(type, content) {

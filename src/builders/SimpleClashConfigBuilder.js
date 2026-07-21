@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import { deepCopy } from '../utils.js';
-import { parseVless } from '../parsers/protocols/vlessParser.js';
+import { parseVless, convertProxyForClash } from '../parsers/protocols/vlessParser.js';
 
 const SIMPLE_CLASH_CONFIG = {
     'mixed-port': 7890,
@@ -60,58 +60,7 @@ export class SimpleClashConfigBuilder {
     }
 
     convertProxy(proxy) {
-        const transportType = proxy.transport?.type || 'tcp';
-        
-        const result = {
-            name: proxy.tag,
-            type: 'vless',
-            server: proxy.server,
-            port: proxy.server_port,
-            uuid: proxy.uuid,
-            flow: proxy.flow || undefined,
-            tls: proxy.tls?.enabled || false,
-            servername: proxy.tls?.server_name || '',
-            'client-fingerprint': proxy.tls?.utls?.fingerprint || 'chrome',
-            network: transportType === 'xhttp' ? 'xhttp' : transportType,
-        };
-
-        // Reality options
-        if (proxy.tls?.reality?.enabled) {
-            result['reality-opts'] = {
-                'public-key': proxy.tls.reality.public_key,
-                'short-id': proxy.tls.reality.short_id,
-            };
-        }
-
-        // Transport options
-        if (transportType === 'ws') {
-            result['ws-opts'] = {
-                path: proxy.transport.path || '/',
-                headers: proxy.transport.headers || {}
-            };
-        } else if (transportType === 'grpc') {
-            result['grpc-opts'] = {
-                'grpc-service-name': proxy.transport.service_name || ''
-            };
-        } else if (transportType === 'xhttp') {
-            result['xhttp-opts'] = {
-                path: proxy.transport.path || '/vless-xhttp',
-                mode: 'auto'
-            };
-        }
-
-        // Other options
-        if (proxy.tcp_fast_open) {
-            result.tfo = true;
-        }
-        if (proxy.tls?.insecure) {
-            result['skip-cert-verify'] = true;
-        }
-        if (proxy.alpn && proxy.alpn.length > 0) {
-            result.alpn = proxy.alpn;
-        }
-
-        return result;
+        return convertProxyForClash(proxy);
     }
 
     addProxyWithDedup(proxy) {

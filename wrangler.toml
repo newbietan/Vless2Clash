@@ -10,7 +10,8 @@ routes = [
 ]
 
 [vars]
-ADMIN_PASSWORD = "123456"
+# ADMIN_PASSWORD = ""        # Use `wrangler secret put ADMIN_PASSWORD` instead
+# DISABLE_AUTH = "true"      # Explicitly expose management APIs without authentication
 # TURNSTILE_SITEKEY = ""    # Cloudflare Turnstile Site Key
 # TURNSTILE_SECRET_KEY = "" # Cloudflare Turnstile Secret Key
 

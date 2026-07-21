@@ -1,11 +1,13 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
 import { Hono } from 'hono';
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { Layout } from '../components/Layout.jsx';
 import { LoginPage } from '../components/LoginPage.jsx';
 import { DashboardPage } from '../components/DashboardPage.jsx';
 import { SubscriptionsPage } from '../components/SubscriptionsPage.jsx';
 import { SimpleClashConfigBuilder } from '../builders/SimpleClashConfigBuilder.js';
+import { normalizeVlessLinks, parseVlessLinks } from '../parsers/protocols/vlessParser.js';
 import { APP_NAME } from '../constants.js';
 import { ConfigStorageService } from '../services/configStorageService.js';
 import { AuthService } from '../services/authService.js';
@@ -19,7 +21,9 @@ export function createApp(bindings = {}) {
 
     const services = {
         configStorage: runtime.kv ? new ConfigStorageService(runtime.kv, { configTtlSeconds: runtime.config.configTtlSeconds }) : null,
-        auth: new AuthService(runtime.kv, adminPassword),
+        auth: new AuthService(runtime.kv, adminPassword, {
+            allowUnauthenticated: runtime.config.allowUnauthenticated
+        }),
         turnstile: new TurnstileService(runtime.config.turnstileSecretKey || '')
     };
 
@@ -47,32 +51,40 @@ export function createApp(bindings = {}) {
             }
             
             const result = await services.auth.login(password);
+            setCookie(c, 'auth_token', result.token, {
+                httpOnly: true,
+                secure: isHttpsRequest(c),
+                sameSite: 'Strict',
+                path: '/',
+                maxAge: 86400
+            });
             return c.json(result);
         } catch (error) {
+            if (error instanceof ServiceError) {
+                return handleError(c, error, runtime.logger);
+            }
             return c.text(error.message, 401);
         }
     });
 
     // Logout API
     app.post('/api/logout', async (c) => {
-        const token = c.req.header('Authorization')?.replace('Bearer ', '');
+        const token = extractBearerToken(c) || getCookie(c, 'auth_token');
         if (token) {
             await services.auth.logout(token);
         }
+        deleteCookie(c, 'auth_token', {
+            secure: isHttpsRequest(c),
+            sameSite: 'Strict',
+            path: '/'
+        });
         return c.json({ success: true });
     });
 
     // Auth check middleware for protected pages
     const requireAuth = async (c, next) => {
-        // Check cookie or header token
-        const token = c.req.header('Authorization')?.replace('Bearer ', '') || 
-                      getCookie(c, 'auth_token');
-        
-        // Also check if token is passed as query param (for simplicity)
-        const queryToken = c.req.query('token');
-        const finalToken = token || queryToken;
-        
-        const isValid = await services.auth.verifyToken(finalToken);
+        const token = extractBearerToken(c) || getCookie(c, 'auth_token');
+        const isValid = await services.auth.verifyToken(token);
         if (!isValid) {
             return c.redirect('/login');
         }
@@ -81,7 +93,7 @@ export function createApp(bindings = {}) {
 
     // API auth middleware - returns 401 JSON for API endpoints
     const requireApiAuth = async (c, next) => {
-        const token = c.req.header('Authorization')?.replace('Bearer ', '');
+        const token = extractBearerToken(c);
         const isValid = await services.auth.verifyToken(token);
         if (!isValid) {
             return c.json({ error: 'Unauthorized' }, 401);
@@ -110,13 +122,19 @@ export function createApp(bindings = {}) {
     app.post('/config', requireApiAuth, async (c) => {
         try {
             const body = await c.req.json();
-            const { vlessLinks, name, nodes } = body;
+            const { vlessLinks, name, dedup = true } = body;
             if (!vlessLinks || typeof vlessLinks !== 'string') {
                 return c.text('Missing vlessLinks parameter', 400);
             }
 
+            const normalizedLinks = normalizeVlessLinks(vlessLinks, { dedup });
+            const nodes = parseVlessLinks(normalizedLinks, { dedup: false });
+            if (nodes.length === 0) {
+                return c.text('No valid VLESS links found', 400);
+            }
+
             const storage = requireConfigStorage(services.configStorage);
-            const configId = await storage.saveConfig('vless', vlessLinks, name, nodes);
+            const configId = await storage.saveConfig('vless', normalizedLinks, name, nodes);
             return c.text(configId);
         } catch (error) {
             if (error instanceof SyntaxError) {
@@ -172,15 +190,57 @@ export function createApp(bindings = {}) {
         }
     });
 
+    // API: Get single subscription detail (requires auth)
+    app.get('/api/subscriptions/:id', requireApiAuth, async (c) => {
+        try {
+            const configId = c.req.param('id');
+            const storage = requireConfigStorage(services.configStorage);
+            const config = await storage.getConfig(configId);
+            if (!config) {
+                return c.json({ error: 'Config not found' }, 404);
+            }
+            return c.json(config);
+        } catch (error) {
+            return handleError(c, error, runtime.logger);
+        }
+    });
+
+    // API: Update subscription (requires auth)
+    app.put('/api/subscriptions/:id', requireApiAuth, async (c) => {
+        try {
+            const configId = c.req.param('id');
+            const body = await c.req.json();
+            const { vlessLinks, name, dedup = true } = body;
+            if (!vlessLinks || typeof vlessLinks !== 'string') {
+                return c.text('Missing vlessLinks parameter', 400);
+            }
+
+            const normalizedLinks = normalizeVlessLinks(vlessLinks, { dedup });
+            const nodes = parseVlessLinks(normalizedLinks, { dedup: false });
+            if (nodes.length === 0) {
+                return c.text('No valid VLESS links found', 400);
+            }
+
+            const storage = requireConfigStorage(services.configStorage);
+            const updatedId = await storage.updateConfig(configId, normalizedLinks, name, nodes);
+            return c.text(updatedId);
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                return c.text(`Invalid format: ${error.message}`, 400);
+            }
+            return handleError(c, error, runtime.logger);
+        }
+    });
+
     // API: Parse VLESS links and return node info (requires auth)
     app.post('/api/parse-nodes', requireApiAuth, async (c) => {
         try {
-            const { vlessLinks } = await c.req.json();
+            const { vlessLinks, dedup = true } = await c.req.json();
             if (!vlessLinks) {
                 return c.json({ error: 'Missing vlessLinks' }, 400);
             }
 
-            const nodes = parseVlessLinks(vlessLinks);
+            const nodes = parseVlessLinks(vlessLinks, { dedup });
             return c.json(nodes);
         } catch (error) {
             return handleError(c, error, runtime.logger);
@@ -203,72 +263,14 @@ export function createApp(bindings = {}) {
     return app;
 }
 
-function getCookie(c, name) {
-    const cookie = c.req.header('Cookie');
-    if (!cookie) return null;
-    const match = cookie.match(new RegExp(`${name}=([^;]+)`));
-    return match ? match[1] : null;
+function extractBearerToken(c) {
+    const authorization = c.req.header('Authorization');
+    const match = authorization?.match(/^Bearer\s+(.+)$/i);
+    return match?.[1].trim() || undefined;
 }
 
-function parseVlessLinks(input) {
-    const lines = input.split('\n').filter(l => l.trim().startsWith('vless://'));
-    const nodes = [];
-    const seen = new Set();
-
-    for (const line of lines) {
-        try {
-            const url = new URL(line.trim());
-            const uuid = url.username;
-            const server = url.hostname;
-            const port = url.port || '443';
-            const params = new URLSearchParams(url.search);
-            const name = decodeURIComponent(url.hash.slice(1) || `${server}:${port}`);
-            
-            // Dedup key
-            const dedupKey = `${server}:${port}:${uuid}`;
-            if (seen.has(dedupKey)) continue;
-            seen.add(dedupKey);
-
-            nodes.push({
-                name,
-                server,
-                port: parseInt(port),
-                protocol: 'VLESS',
-                transport: params.get('type') || 'tcp',
-                security: params.get('security') || 'none',
-                sni: params.get('sni') || '',
-                region: guessRegion(server, name)
-            });
-        } catch (e) {
-            // Skip invalid links
-        }
-    }
-
-    return nodes;
-}
-
-function guessRegion(server, name) {
-    const regionPatterns = {
-        'US': ['us', 'america', '美国'],
-        'JP': ['jp', 'japan', '日本', '东京'],
-        'HK': ['hk', 'hongkong', '香港'],
-        'SG': ['sg', 'singapore', '新加坡', '狮城'],
-        'TW': ['tw', 'taiwan', '台湾', '台北'],
-        'KR': ['kr', 'korea', '韩国', '首尔'],
-        'DE': ['de', 'germany', '德国'],
-        'GB': ['gb', 'uk', '英国', '伦敦'],
-    };
-
-    const lowerName = name.toLowerCase();
-    const lowerServer = server.toLowerCase();
-
-    for (const [region, patterns] of Object.entries(regionPatterns)) {
-        if (patterns.some(p => lowerName.includes(p) || lowerServer.includes(p))) {
-            return region;
-        }
-    }
-
-    return 'OTHER';
+function isHttpsRequest(c) {
+    return new URL(c.req.url).protocol === 'https:';
 }
 
 function getRequestHeader(request, name) {

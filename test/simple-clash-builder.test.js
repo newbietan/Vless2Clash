@@ -3,6 +3,7 @@ import yaml from 'js-yaml';
 import { SimpleClashConfigBuilder } from '../src/builders/SimpleClashConfigBuilder.js';
 import { createApp } from '../src/app/createApp.jsx';
 import { MemoryKVAdapter } from '../src/adapters/kv/memoryKv.js';
+import { parseVlessLinks } from '../src/parsers/protocols/vlessParser.js';
 
 describe('SimpleClashConfigBuilder', () => {
     it('should parse VLESS links and generate simplified Clash config', async () => {
@@ -106,6 +107,39 @@ vless://uuid@example.com:443?security=tls#Valid-Node`;
         expect(config.proxies[0]['reality-opts']['public-key']).toBe('publickey');
         expect(config.proxies[0]['reality-opts']['short-id']).toBe('shortid');
     });
+
+    it('should preserve labels when the URI has no query string', async () => {
+        const builder = new SimpleClashConfigBuilder('vless://uuid@example.com:443#No-Query', 'test-agent');
+        await builder.build();
+        const config = yaml.load(builder.formatConfig());
+
+        expect(config.proxies).toHaveLength(1);
+        expect(config.proxies[0].name).toBe('No-Query');
+    });
+
+    it('should parse false boolean flags and emit udp correctly', async () => {
+        const link = 'vless://uuid@example.com:443?security=tls&allowInsecure=false&udp=1#Flags';
+        const builder = new SimpleClashConfigBuilder(link, 'test-agent');
+        await builder.build();
+        const config = yaml.load(builder.formatConfig());
+
+        expect(config.proxies[0]['skip-cert-verify']).toBeUndefined();
+        expect(config.proxies[0].udp).toBe(true);
+    });
+
+    it('should retain all original VLESS query parameters in node metadata', () => {
+        const link = 'vless://uuid@example.com:443?security=reality&pbk=publickey&sid=shortid&fp=firefox&type=ws&path=%2Fws#Reality';
+        const [node] = parseVlessLinks(link);
+
+        expect(Object.fromEntries(node.params)).toMatchObject({
+            security: 'reality',
+            pbk: 'publickey',
+            sid: 'shortid',
+            fp: 'firefox',
+            type: 'ws',
+            path: '/ws'
+        });
+    });
 });
 
 describe('/sub endpoint integration', () => {
@@ -116,7 +150,8 @@ describe('/sub endpoint integration', () => {
         config: {
             configTtlSeconds: 60,
             shortLinkTtlSeconds: null,
-            adminPassword: ''
+            adminPassword: '',
+            allowUnauthenticated: true
         }
     };
 
@@ -188,6 +223,57 @@ vless://uuid2@server2.com:443?security=tls&sni=server2.com#Node-2`;
 
         expect(config.proxies.length).toBe(2);
     });
+
+    it('should update an existing subscription without changing its id', async () => {
+        const saveRes = await app.request('http://example.com/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vlessLinks: 'vless://uuid@old.example.com:443#Old' })
+        });
+        const configId = await saveRes.text();
+
+        const updateRes = await app.request(`http://example.com/api/subscriptions/${configId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ vlessLinks: 'vless://uuid@new.example.com:443#New' })
+        });
+        const subRes = await app.request(`http://example.com/sub?id=${configId}`);
+        const config = yaml.load(await subRes.text());
+
+        expect(updateRes.status).toBe(200);
+        expect(await updateRes.text()).toBe(configId);
+        expect(config.proxies[0].server).toBe('new.example.com');
+        expect(config.proxies[0].name).toBe('New');
+    });
+
+    it('should keep concurrent index entries independent and hide stale entries', async () => {
+        const kv = new MemoryKVAdapter();
+        const indexedApp = createApp({
+            kv,
+            config: { allowUnauthenticated: true, configTtlSeconds: 60 }
+        });
+        const links = [
+            'vless://uuid1@one.example.com:443#One',
+            'vless://uuid2@two.example.com:443#Two'
+        ];
+        const ids = await Promise.all(links.map(async vlessLinks => {
+            const res = await indexedApp.request('http://example.com/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vlessLinks })
+            });
+            return res.text();
+        }));
+
+        const listRes = await indexedApp.request('http://example.com/api/subscriptions');
+        expect(await listRes.json()).toHaveLength(2);
+        expect(await kv.get('config_index')).toBeNull();
+
+        await kv.delete(ids[0]);
+        await kv.delete(`meta:${ids[0]}`);
+        const prunedRes = await indexedApp.request('http://example.com/api/subscriptions');
+        expect(await prunedRes.json()).toHaveLength(1);
+    });
 });
 
 describe('Page routes', () => {
@@ -198,7 +284,8 @@ describe('Page routes', () => {
         config: {
             configTtlSeconds: 60,
             shortLinkTtlSeconds: null,
-            adminPassword: ''
+            adminPassword: '',
+            allowUnauthenticated: true
         }
     };
 
