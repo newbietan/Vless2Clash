@@ -7,16 +7,32 @@ export const SubscriptionsPage = () => {
             {/* Header Area */}
             <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-surface-variant pb-4">
                 <div>
-                    <h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight mb-1">活跃订阅列表</h1>
-                    <p class="text-body-md font-code-md text-on-surface-variant">&gt; 查询所有订阅状态...</p>
+                    <h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight mb-1">
+                        活跃订阅列表
+                    </h1>
+                    <p class="text-body-md font-code-md text-on-surface-variant">
+                        &gt; 查询所有订阅状态...
+                    </p>
                 </div>
                 <div class="flex gap-3 w-full sm:w-auto">
                     <div class="relative flex-1 sm:w-64">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">search</span>
-                        <input id="search-input" class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-code-md text-code-md py-2 pl-10 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50 transition-colors" placeholder="> 搜索节点..." type="text" />
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">
+                            search
+                        </span>
+                        <input
+                            id="search-input"
+                            class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-code-md text-code-md py-2 pl-10 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-on-surface-variant/50 transition-colors"
+                            placeholder="> 搜索节点..."
+                            type="text"
+                        />
                     </div>
-                    <a href="/" class="bg-primary text-on-primary px-4 py-2 font-code-md text-label-sm uppercase tracking-wider flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[20px]">add</span>
+                    <a
+                        href="/"
+                        class="bg-primary text-on-primary px-4 py-2 font-code-md text-label-sm uppercase tracking-wider flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"
+                    >
+                        <span class="material-symbols-outlined text-[20px]">
+                            add
+                        </span>
                         新建订阅
                     </a>
                 </div>
@@ -27,31 +43,58 @@ export const SubscriptionsPage = () => {
                 <div class="tech-card p-5 flex items-start justify-between relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div>
-                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">总订阅数</span>
-                        <span class="text-headline-lg font-headline-lg text-on-surface" id="stat-total">-</span>
+                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">
+                            总订阅数
+                        </span>
+                        <span
+                            class="text-headline-lg font-headline-lg text-on-surface"
+                            id="stat-total"
+                        >
+                            -
+                        </span>
                     </div>
                     <div class="bg-surface-container p-2 rounded-lg border border-surface-variant">
-                        <span class="material-symbols-outlined text-primary text-[24px]">list_alt</span>
+                        <span class="material-symbols-outlined text-primary text-[24px]">
+                            list_alt
+                        </span>
                     </div>
                 </div>
                 <div class="tech-card p-5 flex items-start justify-between relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div>
-                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">总节点数</span>
-                        <span class="text-headline-lg font-headline-lg text-on-surface" id="stat-nodes">-</span>
+                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">
+                            总节点数
+                        </span>
+                        <span
+                            class="text-headline-lg font-headline-lg text-on-surface"
+                            id="stat-nodes"
+                        >
+                            -
+                        </span>
                     </div>
                     <div class="bg-surface-container p-2 rounded-lg border border-surface-variant">
-                        <span class="material-symbols-outlined text-secondary text-[24px]">hub</span>
+                        <span class="material-symbols-outlined text-secondary text-[24px]">
+                            hub
+                        </span>
                     </div>
                 </div>
                 <div class="tech-card p-5 flex items-start justify-between relative overflow-hidden group">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-tertiary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                     <div>
-                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">最后同步</span>
-                        <span class="text-headline-lg font-headline-lg text-on-surface" id="stat-recent">-</span>
+                        <span class="text-label-sm font-code-md text-on-surface-variant block mb-2 tracking-widest uppercase">
+                            最后同步
+                        </span>
+                        <span
+                            class="text-headline-lg font-headline-lg text-on-surface"
+                            id="stat-recent"
+                        >
+                            -
+                        </span>
                     </div>
                     <div class="bg-surface-container p-2 rounded-lg border border-surface-variant">
-                        <span class="material-symbols-outlined text-tertiary text-[24px]">sync</span>
+                        <span class="material-symbols-outlined text-tertiary text-[24px]">
+                            sync
+                        </span>
                     </div>
                 </div>
             </div>
@@ -60,23 +103,37 @@ export const SubscriptionsPage = () => {
             <div class="flex flex-col gap-4">
                 {/* List Header */}
                 <div class="flex items-center justify-between border-b border-surface-variant pb-2 px-2">
-                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/3">配置名称</span>
-                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden sm:block">节点数</span>
-                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden sm:block">状态</span>
-                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden md:block">添加日期</span>
-                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-12 text-right">操作</span>
+                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/3">
+                        配置名称
+                    </span>
+                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden sm:block">
+                        节点数
+                    </span>
+                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden sm:block">
+                        状态
+                    </span>
+                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-1/6 hidden md:block">
+                        添加日期
+                    </span>
+                    <span class="text-label-sm font-code-md text-outline uppercase tracking-widest w-12 text-right">
+                        操作
+                    </span>
                 </div>
 
                 {/* List Container */}
                 <div id="subscriptions-list">
                     <div class="tech-card p-8 text-center text-on-surface-variant">
-                        <span class="material-symbols-outlined text-[48px] mb-2 block">hourglass_empty</span>
+                        <span class="material-symbols-outlined text-[48px] mb-2 block">
+                            hourglass_empty
+                        </span>
                         加载中...
                     </div>
                 </div>
             </div>
 
-            <script dangerouslySetInnerHTML={{ __html: `
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
                 let expandedId = null;
                 let allConfigs = [];
 
@@ -311,7 +368,9 @@ export const SubscriptionsPage = () => {
                 });
 
                 loadSubscriptions();
-            ` }} />
+            `,
+                }}
+            />
         </fragment>
     );
 };

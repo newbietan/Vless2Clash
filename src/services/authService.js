@@ -3,8 +3,8 @@
  * Token is stored in KV with TTL for session management
  */
 
-import { generateWebPath } from '../utils.js';
-import { MissingDependencyError } from './errors.js';
+import { generateWebPath } from "../utils.js";
+import { MissingDependencyError } from "./errors.js";
 
 export class AuthService {
     constructor(kv, password, options = {}) {
@@ -20,24 +20,28 @@ export class AuthService {
     async login(password) {
         if (!this.password) {
             if (!this.allowUnauthenticated) {
-                throw new MissingDependencyError('ADMIN_PASSWORD is not configured');
+                throw new MissingDependencyError(
+                    "ADMIN_PASSWORD is not configured",
+                );
             }
-            return { token: 'no-auth', expiresAt: Date.now() + 86400000 };
+            return { token: "no-auth", expiresAt: Date.now() + 86400000 };
         }
 
         if (password !== this.password) {
-            throw new Error('密码错误');
+            throw new Error("密码错误");
         }
 
         if (!this.kv) {
-            throw new MissingDependencyError('Authentication requires a KV store');
+            throw new MissingDependencyError(
+                "Authentication requires a KV store",
+            );
         }
 
         const token = generateWebPath(32);
-        const expiresAt = Date.now() + (this.sessionTtl * 1000);
+        const expiresAt = Date.now() + this.sessionTtl * 1000;
 
         await this.kv.put(`session:${token}`, JSON.stringify({ expiresAt }), {
-            expirationTtl: this.sessionTtl
+            expirationTtl: this.sessionTtl,
         });
 
         return { token, expiresAt };
@@ -76,7 +80,7 @@ export class AuthService {
      * Invalidate session token
      */
     async logout(token) {
-        if (this.kv && token && token !== 'no-auth') {
+        if (this.kv && token && token !== "no-auth") {
             await this.kv.delete(`session:${token}`);
         }
     }

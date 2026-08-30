@@ -1,6 +1,6 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
-import { APP_NAME } from '../constants.js';
+import { APP_NAME } from "../constants.js";
 
 export const LoginPage = ({ turnstileSitekey }) => {
     const hasTurnstile = !!turnstileSitekey;
@@ -115,14 +115,32 @@ export const LoginPage = ({ turnstileSitekey }) => {
         <html lang="zh-CN">
             <head>
                 <meta charset="utf-8" />
-                <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+                <meta
+                    content="width=device-width, initial-scale=1.0"
+                    name="viewport"
+                />
                 <title>管理员登录 - {APP_NAME}</title>
                 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
                 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-                <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-                <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-                {hasTurnstile && <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
-                <script id="tailwind-config" dangerouslySetInnerHTML={{ __html: tailwindConfig }} />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+                    rel="stylesheet"
+                />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+                    rel="stylesheet"
+                />
+                {hasTurnstile && (
+                    <script
+                        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+                        async
+                        defer
+                    ></script>
+                )}
+                <script
+                    id="tailwind-config"
+                    dangerouslySetInnerHTML={{ __html: tailwindConfig }}
+                />
                 <style dangerouslySetInnerHTML={{ __html: styles }} />
             </head>
             <body class="min-h-screen flex items-center justify-center p-4 text-on-surface font-body-md">
@@ -143,13 +161,19 @@ export const LoginPage = ({ turnstileSitekey }) => {
                     {/* Content */}
                     <div class="p-window-padding flex flex-col gap-6">
                         <div class="flex flex-col gap-2">
-                            <p class="text-body-md font-code-md text-on-surface-variant">&gt; 正在身份验证...</p>
-                            <p class="text-body-md font-code-md text-on-surface-variant">&gt; 请输入管理员密码</p>
+                            <p class="text-body-md font-code-md text-on-surface-variant">
+                                &gt; 正在身份验证...
+                            </p>
+                            <p class="text-body-md font-code-md text-on-surface-variant">
+                                &gt; 请输入管理员密码
+                            </p>
                         </div>
 
                         <form id="login-form" class="flex flex-col gap-6">
                             <div class="relative flex items-center w-full">
-                                <span class="absolute left-3 text-primary font-code-lg text-code-lg">&gt;</span>
+                                <span class="absolute left-3 text-primary font-code-lg text-code-lg">
+                                    &gt;
+                                </span>
                                 <input
                                     type="password"
                                     id="password"
@@ -162,12 +186,19 @@ export const LoginPage = ({ turnstileSitekey }) => {
                             {/* Turnstile */}
                             {hasTurnstile && (
                                 <div class="w-full">
-                                    <div id="turnstile-widget" class="cf-turnstile" data-sitekey={turnstileSitekey} data-callback="onTurnstileSuccess"></div>
+                                    <div
+                                        id="turnstile-widget"
+                                        class="cf-turnstile"
+                                        data-sitekey={turnstileSitekey}
+                                        data-callback="onTurnstileSuccess"
+                                    ></div>
                                 </div>
                             )}
 
-                            <div id="error-msg" class="hidden text-error text-sm bg-error-container/30 p-3 rounded border border-error/30">
-                            </div>
+                            <div
+                                id="error-msg"
+                                class="hidden text-error text-sm bg-error-container/30 p-3 rounded border border-error/30"
+                            ></div>
 
                             <button
                                 type="submit"
@@ -175,7 +206,14 @@ export const LoginPage = ({ turnstileSitekey }) => {
                                 class="w-full bg-primary hover:bg-primary/90 text-on-primary font-code-md text-code-md font-bold py-3 rounded-DEFAULT transition-all duration-200 glow-btn flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={hasTurnstile}
                             >
-                                <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>
+                                <span
+                                    class="material-symbols-outlined"
+                                    style={{
+                                        fontVariationSettings: "'FILL' 1",
+                                    }}
+                                >
+                                    login
+                                </span>
                                 立即登录
                             </button>
                         </form>
@@ -183,12 +221,23 @@ export const LoginPage = ({ turnstileSitekey }) => {
 
                     {/* Status Bar Footer */}
                     <div class="w-full px-window-padding py-2 bg-surface-container-low border-t border-outline-variant flex justify-between items-center mt-auto">
-                        <span class="text-label-sm font-code-md text-on-surface-variant/60">SYS_STATUS: PENDING_AUTH</span>
-                        <a class="text-label-sm font-code-md text-on-surface-variant/60 hover:text-primary transition-opacity" href="https://github.com/newbietan/Vless2Clash" target="_blank" rel="noopener noreferrer">GitHub</a>
+                        <span class="text-label-sm font-code-md text-on-surface-variant/60">
+                            SYS_STATUS: PENDING_AUTH
+                        </span>
+                        <a
+                            class="text-label-sm font-code-md text-on-surface-variant/60 hover:text-primary transition-opacity"
+                            href="https://github.com/newbietan/Vless2Clash"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            GitHub
+                        </a>
                     </div>
                 </div>
 
-                <script dangerouslySetInnerHTML={{ __html: `
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
                     let turnstileToken = '';
                     const hasTurnstile = ${hasTurnstile};
 
@@ -236,7 +285,9 @@ export const LoginPage = ({ turnstileSitekey }) => {
                             submitBtn.innerHTML = '<span class="material-symbols-outlined" style="font-variation-settings: \\'FILL\\' 1">login</span> 立即登录';
                         }
                     });
-                ` }} />
+                `,
+                    }}
+                />
             </body>
         </html>
     );

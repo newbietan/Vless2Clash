@@ -5,7 +5,8 @@
 export class TurnstileService {
     constructor(secretKey) {
         this.secretKey = secretKey;
-        this.verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        this.verifyUrl =
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify";
     }
 
     /**
@@ -26,24 +27,24 @@ export class TurnstileService {
 
         try {
             const formData = new URLSearchParams();
-            formData.append('secret', this.secretKey);
-            formData.append('response', token);
+            formData.append("secret", this.secretKey);
+            formData.append("response", token);
             if (remoteIp) {
-                formData.append('remoteip', remoteIp);
+                formData.append("remoteip", remoteIp);
             }
 
             const res = await fetch(this.verifyUrl, {
-                method: 'POST',
+                method: "POST",
                 body: formData,
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             });
 
             const result = await res.json();
             return result.success === true;
         } catch (error) {
-            console.error('Turnstile verification failed:', error);
+            console.error("Turnstile verification failed:", error);
             return false;
         }
     }

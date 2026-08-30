@@ -21,7 +21,7 @@ export class CloudflareKVAdapter {
 
         do {
             const page = await this.binding.list({ prefix, cursor });
-            keys.push(...page.keys.map(key => key.name));
+            keys.push(...page.keys.map((key) => key.name));
             cursor = page.list_complete ? undefined : page.cursor;
         } while (cursor);
 

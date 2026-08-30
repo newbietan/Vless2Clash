@@ -35,6 +35,8 @@ export class MemoryKVAdapter {
     }
 
     async list(prefix) {
-        return Array.from(this.store.keys()).filter(key => key.startsWith(prefix));
+        return Array.from(this.store.keys()).filter((key) =>
+            key.startsWith(prefix),
+        );
     }
 }

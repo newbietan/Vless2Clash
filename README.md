@@ -111,7 +111,7 @@ npm run deploy
 在 Cloudflare Dashboard → Workers → Settings → Environment Variables 配置，或写入 `wrangler.toml` 的 `[vars]` 段：
 
 | 变量 | 必填 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `ADMIN_PASSWORD` | 是 | 管理密码，建议配置为 Cloudflare Secret |
 | `DISABLE_AUTH` | 否 | 仅在明确需要公开管理端时设为 `true` |
 | `TURNSTILE_SITEKEY` | 否 | Turnstile Site Key，不设置则跳过验证 |
@@ -163,6 +163,7 @@ npx wrangler secret put ADMIN_PASSWORD
 ### 5. Clash 客户端使用
 
 在 Clash / Mihomo 客户端中添加订阅：
+
 - 订阅名称：自定义
 - 订阅地址：生成的链接
 - 自动更新：建议 3600 秒
@@ -171,25 +172,20 @@ npx wrangler secret put ADMIN_PASSWORD
 
 ### 代理组
 
-- **PROXY** — 默认代理选择，包含全部节点、业务分组和 `DIRECT`
-- **Streaming** — Netflix、Disney+、Spotify、YouTube 等流媒体规则
-- **AI** — OpenAI、Anthropic、Cursor 等 AI 服务规则
-- **Microsoft** — 微软服务分组，默认优先直连
-- **Telegram** — Telegram 专用分组
+- **PROXY** — 默认国外代理选择，包含全部节点和 `DIRECT`
+- **AI** — AI 服务专用分组，可独立选择节点（例如专门用于 OpenAI/Claude 的线路）
+- 国内流量走内建的 `DIRECT`，无需单独建组
 
 ### 路由规则
 
-使用 GEOSITE / GEOIP 内置规则，无需下载额外规则集：
+使用 GEOSITE / GEOIP 内置规则，无需下载额外规则集，也无需维护写死的域名列表：
 
-- 中国域名 → 直连
-- 中国 IP → 直连
 - 私有网络 → 直连
 - 广告域名 → 拒绝
-- Telegram → `Telegram`
-- AI 服务 → `AI`
-- 流媒体 → `Streaming`
-- Google、GitHub 和常用境外服务 → `PROXY`
-- 其他流量 → `PROXY`
+- 中国域名（`GEOSITE,cn`） → 直连
+- 中国 IP（`GEOIP,CN`） → 直连
+- AI 服务（OpenAI、Anthropic、Gemini、Cursor 等） → `AI`
+- 其余国外流量 → `PROXY`
 
 生成的配置面向支持 GEOSITE / GEOIP 规则的 Clash.Meta / Mihomo 内核。
 
@@ -230,11 +226,14 @@ src/
 ├── services/
 │   ├── authService.js          # 认证服务
 │   ├── configStorageService.js # 配置存储
+│   ├── loginThrottleService.js # 登录防爆破（按 IP 限速）
 │   └── turnstileService.js     # Turnstile 验证
 ├── constants.js                # 应用常量
 ├── utils.js                    # 工具函数
 └── worker.jsx                  # Cloudflare Workers 入口
 ```
+
+`public/dashboard.js` 为仪表盘前端脚本，由 Cloudflare Assets 直接提供（不再内联于 JSX）。
 
 ## 技术栈
 

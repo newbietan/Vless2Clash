@@ -1,4 +1,9 @@
-import { createTlsConfig, createTransportConfig, parseArray, parseBool } from '../../utils.js';
+import {
+    createTlsConfig,
+    createTransportConfig,
+    parseArray,
+    parseBool,
+} from "../../utils.js";
 
 export function parseVless(url) {
     const { uuid, host, port, params, name } = parseVlessUri(url);
@@ -7,17 +12,20 @@ export function parseVless(url) {
     if (tls.reality) {
         tls.utls = {
             enabled: true,
-            fingerprint: params.fp || 'chrome'
+            fingerprint: params.fp || "chrome",
         };
     }
-    const transportType = params.type || 'tcp';
-    const transport = transportType !== 'tcp' ? createTransportConfig({ ...params, type: transportType }) : undefined;
+    const transportType = params.type || "tcp";
+    const transport =
+        transportType === "tcp"
+            ? undefined
+            : createTransportConfig({ ...params, type: transportType });
 
     // `udp` is a Clash-only flag; ClashConfigBuilder reads it, SingboxConfigBuilder strips it.
-    const udp = params.udp !== undefined ? parseBool(params.udp) : undefined;
+    const udp = params.udp === undefined ? undefined : parseBool(params.udp);
 
     return {
-        type: 'vless',
+        type: "vless",
         tag: name,
         server: host,
         server_port: port,
@@ -27,47 +35,47 @@ export function parseVless(url) {
         transport,
         flow: params.flow ?? undefined,
         alpn: parseArray(params.alpn),
-        ...(udp !== undefined ? { udp } : {})
+        ...(udp === undefined ? {} : { udp }),
     };
 }
 
 export function convertProxyForClash(proxy) {
-    const transportType = proxy.transport?.type || 'tcp';
+    const transportType = proxy.transport?.type || "tcp";
 
     const result = {
         name: proxy.tag,
-        type: 'vless',
+        type: "vless",
         server: proxy.server,
         port: proxy.server_port,
         uuid: proxy.uuid,
         flow: proxy.flow || undefined,
         tls: proxy.tls?.enabled || false,
-        servername: proxy.tls?.server_name || '',
-        'client-fingerprint': proxy.tls?.utls?.fingerprint || 'chrome',
-        network: transportType === 'xhttp' ? 'xhttp' : transportType,
-        ...(proxy.udp !== undefined ? { udp: proxy.udp } : {}),
+        servername: proxy.tls?.server_name || "",
+        "client-fingerprint": proxy.tls?.utls?.fingerprint || "chrome",
+        network: transportType === "xhttp" ? "xhttp" : transportType,
+        ...(proxy.udp === undefined ? {} : { udp: proxy.udp }),
     };
 
     if (proxy.tls?.reality?.enabled) {
-        result['reality-opts'] = {
-            'public-key': proxy.tls.reality.public_key,
-            'short-id': proxy.tls.reality.short_id,
+        result["reality-opts"] = {
+            "public-key": proxy.tls.reality.public_key,
+            "short-id": proxy.tls.reality.short_id,
         };
     }
 
-    if (transportType === 'ws') {
-        result['ws-opts'] = {
-            path: proxy.transport.path || '/',
-            headers: proxy.transport.headers || {}
+    if (transportType === "ws") {
+        result["ws-opts"] = {
+            path: proxy.transport.path || "/",
+            headers: proxy.transport.headers || {},
         };
-    } else if (transportType === 'grpc') {
-        result['grpc-opts'] = {
-            'grpc-service-name': proxy.transport.service_name || ''
+    } else if (transportType === "grpc") {
+        result["grpc-opts"] = {
+            "grpc-service-name": proxy.transport.service_name || "",
         };
-    } else if (transportType === 'xhttp') {
-        result['xhttp-opts'] = {
-            path: proxy.transport.path || '/vless-xhttp',
-            mode: proxy.transport.mode || 'auto'
+    } else if (transportType === "xhttp") {
+        result["xhttp-opts"] = {
+            path: proxy.transport.path || "/vless-xhttp",
+            mode: proxy.transport.mode || "auto",
         };
     }
 
@@ -75,7 +83,7 @@ export function convertProxyForClash(proxy) {
         result.tfo = true;
     }
     if (proxy.tls?.insecure) {
-        result['skip-cert-verify'] = true;
+        result["skip-cert-verify"] = true;
     }
     if (proxy.alpn && proxy.alpn.length > 0) {
         result.alpn = proxy.alpn;
@@ -92,16 +100,16 @@ export function parseVlessLinks(input, { dedup = true } = {}) {
             uuid,
             server,
             port,
-            protocol: 'VLESS',
-            transport: params.type || 'tcp',
-            security: params.security || 'none',
-            sni: params.sni || '',
-            path: params.path || '',
-            host: params.host || '',
-            serviceName: params.serviceName || '',
-            flow: params.flow || '',
+            protocol: "VLESS",
+            transport: params.type || "tcp",
+            security: params.security || "none",
+            sni: params.sni || "",
+            path: params.path || "",
+            host: params.host || "",
+            serviceName: params.serviceName || "",
+            flow: params.flow || "",
             region: guessRegion(server, name),
-            params: paramEntries
+            params: paramEntries,
         };
     });
 }
@@ -109,11 +117,13 @@ export function parseVlessLinks(input, { dedup = true } = {}) {
 export function normalizeVlessLinks(input, { dedup = true } = {}) {
     return collectVlessLinks(input, { dedup })
         .map(({ raw }) => raw)
-        .join('\n');
+        .join("\n");
 }
 
 function collectVlessLinks(input, { dedup }) {
-    const lines = (input || '').split('\n').filter(line => line.trim().startsWith('vless://'));
+    const lines = (input || "")
+        .split("\n")
+        .filter((line) => line.trim().startsWith("vless://"));
     const entries = [];
     const seen = new Set();
 
@@ -135,15 +145,15 @@ function collectVlessLinks(input, { dedup }) {
 
 function parseVlessUri(value) {
     const url = new URL(value);
-    if (url.protocol !== 'vless:') {
-        throw new TypeError('Unsupported protocol');
+    if (url.protocol !== "vless:") {
+        throw new TypeError("Unsupported protocol");
     }
 
     const uuid = decodeURIComponent(url.username);
-    const host = url.hostname.replace(/^\[(.*)\]$/, '$1');
+    const host = url.hostname.replace(/^\[(.*)\]$/, "$1");
     const port = Number(url.port || 443);
     if (!uuid || !host || !Number.isInteger(port) || port < 1 || port > 65535) {
-        throw new TypeError('Invalid VLESS endpoint');
+        throw new TypeError("Invalid VLESS endpoint");
     }
 
     const paramEntries = Array.from(url.searchParams.entries());
@@ -160,14 +170,14 @@ function parseVlessUri(value) {
 }
 
 const REGION_PATTERNS = {
-    'US': ['us', 'america', '美国'],
-    'JP': ['jp', 'japan', '日本', '东京'],
-    'HK': ['hk', 'hongkong', '香港'],
-    'SG': ['sg', 'singapore', '新加坡', '狮城'],
-    'TW': ['tw', 'taiwan', '台湾', '台北'],
-    'KR': ['kr', 'korea', '韩国', '首尔'],
-    'DE': ['de', 'germany', '德国'],
-    'GB': ['gb', 'uk', '英国', '伦敦'],
+    US: ["us", "america", "美国"],
+    JP: ["jp", "japan", "日本", "东京"],
+    HK: ["hk", "hongkong", "香港"],
+    SG: ["sg", "singapore", "新加坡", "狮城"],
+    TW: ["tw", "taiwan", "台湾", "台北"],
+    KR: ["kr", "korea", "韩国", "首尔"],
+    DE: ["de", "germany", "德国"],
+    GB: ["gb", "uk", "英国", "伦敦"],
 };
 
 function guessRegion(server, name) {
@@ -175,10 +185,14 @@ function guessRegion(server, name) {
     const lowerServer = server.toLowerCase();
 
     for (const [region, patterns] of Object.entries(REGION_PATTERNS)) {
-        if (patterns.some(p => lowerName.includes(p) || lowerServer.includes(p))) {
+        if (
+            patterns.some(
+                (p) => lowerName.includes(p) || lowerServer.includes(p),
+            )
+        ) {
             return region;
         }
     }
 
-    return 'OTHER';
+    return "OTHER";
 }

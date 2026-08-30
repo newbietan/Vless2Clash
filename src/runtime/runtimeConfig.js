@@ -25,7 +25,7 @@
  */
 
 const DEFAULTS = {
-    configTtlSeconds: 60 * 60 * 24 * 30
+  configTtlSeconds: 60 * 60 * 24 * 30,
 };
 
 /**
@@ -35,17 +35,18 @@ const DEFAULTS = {
  * @returns {{ kv: KeyValueStore | null, assetFetcher: AssetFetcher | null, logger: Console, config: RuntimeConfig & { configTtlSeconds: number, shortLinkTtlSeconds: number | null, adminPassword: string, allowUnauthenticated: boolean, turnstileSitekey: string, turnstileSecretKey: string } }}
  */
 export function normalizeRuntime(runtime = {}) {
-    return {
-        kv: runtime.kv ?? null,
-        assetFetcher: runtime.assetFetcher ?? null,
-        logger: runtime.logger ?? console,
-        config: {
-            configTtlSeconds: runtime.config?.configTtlSeconds ?? DEFAULTS.configTtlSeconds,
-            shortLinkTtlSeconds: runtime.config?.shortLinkTtlSeconds ?? null,
-            adminPassword: runtime.config?.adminPassword ?? '',
-            allowUnauthenticated: runtime.config?.allowUnauthenticated === true,
-            turnstileSitekey: runtime.config?.turnstileSitekey ?? '',
-            turnstileSecretKey: runtime.config?.turnstileSecretKey ?? ''
-        }
-    };
+  return {
+    kv: runtime.kv ?? null,
+    assetFetcher: runtime.assetFetcher ?? null,
+    logger: runtime.logger ?? console,
+    config: {
+      configTtlSeconds:
+        runtime.config?.configTtlSeconds ?? DEFAULTS.configTtlSeconds,
+      shortLinkTtlSeconds: runtime.config?.shortLinkTtlSeconds ?? null,
+      adminPassword: runtime.config?.adminPassword ?? "",
+      allowUnauthenticated: runtime.config?.allowUnauthenticated === true,
+      turnstileSitekey: runtime.config?.turnstileSitekey ?? "",
+      turnstileSecretKey: runtime.config?.turnstileSecretKey ?? "",
+    },
+  };
 }

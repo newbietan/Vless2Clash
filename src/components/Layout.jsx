@@ -1,6 +1,6 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
-import { APP_NAME, GITHUB_REPO } from '../constants.js';
+import { APP_NAME, GITHUB_REPO } from "../constants.js";
 
 export const Layout = ({ title, children, activePage }) => {
     const tailwindConfig = `
@@ -166,21 +166,35 @@ export const Layout = ({ title, children, activePage }) => {
     `;
 
     const pages = [
-        { name: '仪表盘', href: '/', icon: 'dashboard' },
-        { name: '订阅管理', href: '/subscriptions', icon: 'subscriptions' },
+        { name: "仪表盘", href: "/", icon: "dashboard" },
+        { name: "订阅管理", href: "/subscriptions", icon: "subscriptions" },
     ];
 
     return (
         <html lang="zh-CN">
             <head>
                 <meta charset="utf-8" />
-                <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-                <title>{activePage} | {APP_NAME}</title>
+                <meta
+                    content="width=device-width, initial-scale=1.0"
+                    name="viewport"
+                />
+                <title>
+                    {activePage} | {APP_NAME}
+                </title>
                 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
                 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-                <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-                <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-                <script id="tailwind-config" dangerouslySetInnerHTML={{ __html: tailwindConfig }} />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+                    rel="stylesheet"
+                />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+                    rel="stylesheet"
+                />
+                <script
+                    id="tailwind-config"
+                    dangerouslySetInnerHTML={{ __html: tailwindConfig }}
+                />
                 <style dangerouslySetInnerHTML={{ __html: styles }} />
             </head>
             <body class="text-on-surface h-screen flex flex-col font-body-md text-body-md overflow-hidden relative selection:bg-primary-container selection:text-on-primary-container">
@@ -190,18 +204,30 @@ export const Layout = ({ title, children, activePage }) => {
                         {/* TopAppBar */}
                         <header class="bg-surface-container-low border-b border-outline-variant flex justify-between items-center w-full px-window-padding h-12 flex-shrink-0 z-20">
                             <div class="flex items-center gap-2 mr-4">
-                                <button class="traffic-close" id="logout-btn" title="退出登录">
+                                <button
+                                    class="traffic-close"
+                                    id="logout-btn"
+                                    title="退出登录"
+                                >
                                     <span class="close-icon">✕</span>
                                 </button>
                                 <div class="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-[0_0_4px_rgba(255,189,46,0.4)]"></div>
                                 <div class="w-3 h-3 rounded-full bg-[#27c93f] shadow-[0_0_4px_rgba(39,201,63,0.4)]"></div>
                             </div>
                             <div class="flex-1 text-center">
-                                <span class="text-body-md font-code-md font-bold text-on-surface">终端 — root@vless2clash</span>
+                                <span class="text-body-md font-code-md font-bold text-on-surface">
+                                    终端 — root@vless2clash
+                                </span>
                             </div>
                             <div class="flex items-center gap-3 text-on-surface-variant">
-                                <button id="mobile-menu-btn" aria-label="Menu" class="md:hidden hover:bg-surface-variant/20 transition-colors p-1 rounded">
-                                    <span class="material-symbols-outlined text-[20px]">menu</span>
+                                <button
+                                    id="mobile-menu-btn"
+                                    aria-label="Menu"
+                                    class="md:hidden hover:bg-surface-variant/20 transition-colors p-1 rounded"
+                                >
+                                    <span class="material-symbols-outlined text-[20px]">
+                                        menu
+                                    </span>
                                 </button>
                             </div>
                         </header>
@@ -211,49 +237,74 @@ export const Layout = ({ title, children, activePage }) => {
                             <nav class="hidden md:flex flex-col bg-surface border-r border-outline-variant backdrop-blur-md h-full w-64 flex-shrink-0 z-10 py-margin-desktop space-y-2">
                                 <div class="px-6 mb-8 flex flex-col gap-1 items-center">
                                     <div class="flex flex-col items-center justify-center w-full gap-2 mb-2">
-                                        <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">{APP_NAME}</h2>
+                                        <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">
+                                            {APP_NAME}
+                                        </h2>
                                     </div>
                                 </div>
                                 <div class="flex-1 flex flex-col gap-1">
-                                    {pages.map(page => (
+                                    {pages.map((page) => (
                                         <a
                                             key={page.name}
                                             class={`flex items-center gap-3 px-4 py-2 mx-2 rounded-lg transition-all duration-200 ease-in-out group ${
                                                 activePage === page.name
-                                                    ? 'bg-primary-container text-on-primary-container'
-                                                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest'
+                                                    ? "bg-primary-container text-on-primary-container"
+                                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest"
                                             }`}
                                             href={page.href}
                                         >
-                                            <span class={`material-symbols-outlined ${activePage === page.name ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}
-                                                style={activePage === page.name ? { fontVariationSettings: '"FILL" 1' } : {}}>
+                                            <span
+                                                class={`material-symbols-outlined ${activePage === page.name ? "opacity-100" : "opacity-70 group-hover:opacity-100"}`}
+                                                style={
+                                                    activePage === page.name
+                                                        ? {
+                                                              fontVariationSettings:
+                                                                  '"FILL" 1',
+                                                          }
+                                                        : {}
+                                                }
+                                            >
                                                 {page.icon}
                                             </span>
-                                            <span class="text-label-sm font-code-md tracking-wider">{page.name}</span>
+                                            <span class="text-label-sm font-code-md tracking-wider">
+                                                {page.name}
+                                            </span>
                                         </a>
                                     ))}
                                 </div>
                             </nav>
 
                             {/* Mobile Drawer */}
-                            <div id="mobile-overlay" class="fixed inset-0 bg-black/30 z-40 hidden md:hidden"></div>
-                            <nav id="mobile-nav" class="fixed left-0 top-0 h-full w-64 bg-surface border-r border-outline-variant transform -translate-x-full transition-transform duration-300 z-50 flex flex-col py-margin-desktop space-y-2 md:hidden">
+                            <div
+                                id="mobile-overlay"
+                                class="fixed inset-0 bg-black/30 z-40 hidden md:hidden"
+                            ></div>
+                            <nav
+                                id="mobile-nav"
+                                class="fixed left-0 top-0 h-full w-64 bg-surface border-r border-outline-variant transform -translate-x-full transition-transform duration-300 z-50 flex flex-col py-margin-desktop space-y-2 md:hidden"
+                            >
                                 <div class="px-6 mb-8 flex flex-col items-center">
-                                    <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">{APP_NAME}</h2>
+                                    <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight">
+                                        {APP_NAME}
+                                    </h2>
                                 </div>
                                 <div class="flex-1 flex flex-col gap-1">
-                                    {pages.map(page => (
+                                    {pages.map((page) => (
                                         <a
                                             key={page.name}
                                             class={`flex items-center gap-3 px-4 py-2 mx-2 rounded-lg transition-all duration-200 ease-in-out ${
                                                 activePage === page.name
-                                                    ? 'bg-primary-container text-on-primary-container'
-                                                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest'
+                                                    ? "bg-primary-container text-on-primary-container"
+                                                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest"
                                             }`}
                                             href={page.href}
                                         >
-                                            <span class="material-symbols-outlined text-[20px]">{page.icon}</span>
-                                            <span class="text-label-sm font-code-md tracking-wider">{page.name}</span>
+                                            <span class="material-symbols-outlined text-[20px]">
+                                                {page.icon}
+                                            </span>
+                                            <span class="text-label-sm font-code-md tracking-wider">
+                                                {page.name}
+                                            </span>
                                         </a>
                                     ))}
                                 </div>
@@ -269,16 +320,27 @@ export const Layout = ({ title, children, activePage }) => {
                         {/* Footer Status Bar */}
                         <footer class="bg-surface-container-lowest/80 border-t border-outline-variant backdrop-blur-xl flex justify-between items-center w-full px-window-padding py-1 absolute bottom-0 z-50 glass-status">
                             <div class="flex items-center gap-4">
-                                <span class="text-label-sm font-code-md text-on-surface-variant/60">系统状态: 运行良好</span>
+                                <span class="text-label-sm font-code-md text-on-surface-variant/60">
+                                    系统状态: 运行良好
+                                </span>
                             </div>
                             <div class="flex gap-4">
-                                <a class="text-label-sm font-code-md text-on-surface-variant/60 cursor-pointer opacity-80 hover:opacity-100 hover:text-primary transition-opacity" href={GITHUB_REPO} target="_blank" rel="noopener noreferrer">GitHub</a>
+                                <a
+                                    class="text-label-sm font-code-md text-on-surface-variant/60 cursor-pointer opacity-80 hover:opacity-100 hover:text-primary transition-opacity"
+                                    href={GITHUB_REPO}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    GitHub
+                                </a>
                             </div>
                         </footer>
                     </div>
                 </div>
 
-                <script dangerouslySetInnerHTML={{ __html: `
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
                     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
                     const mobileNav = document.getElementById('mobile-nav');
                     const mobileOverlay = document.getElementById('mobile-overlay');
@@ -312,7 +374,9 @@ export const Layout = ({ title, children, activePage }) => {
                             }
                         });
                     }
-                ` }} />
+                `,
+                    }}
+                />
             </body>
         </html>
     );
