@@ -28,26 +28,23 @@ describe("SimpleClashConfigBuilder", () => {
         expect(config.proxies[0].port).toBe(443);
         expect(config.proxies[0]["client-fingerprint"]).toBe("chrome");
 
-        // Check proxy groups
-        const proxyGroup = config["proxy-groups"].find(
-            (g) => g.name === "PROXY",
-        );
-        expect(proxyGroup).toBeDefined();
+        // Check proxy groups - exactly one group containing all nodes
+        expect(config["proxy-groups"].length).toBe(1);
+        const proxyGroup = config["proxy-groups"][0];
+        expect(proxyGroup.name).toBe("PROXY");
+        expect(proxyGroup.type).toBe("select");
         expect(proxyGroup.proxies).toContain("Test-Node");
         expect(proxyGroup.proxies).toContain("DIRECT");
 
-        const aiGroup = config["proxy-groups"].find((g) => g.name === "AI");
-        expect(aiGroup).toBeDefined();
-        expect(aiGroup.proxies).toContain("Test-Node");
-        expect(aiGroup.proxies).toContain("DIRECT");
+        // DNS configuration for OpenClash
+        expect(config.dns).toBeDefined();
+        expect(config.dns.enable).toBe(true);
+        expect(config.dns["enhanced-mode"]).toBe("fake-ip");
 
-        // AI traffic must route to its own group, not PROXY.
-        expect(config.rules).toContain("GEOSITE,openai,AI");
-        expect(config.rules).toContain("DOMAIN-SUFFIX,anthropic.com,AI");
-
-        // Check rules use GEOSITE/GEOIP
-        expect(config.rules).toContain("GEOSITE,cn,DIRECT");
-        expect(config.rules).toContain("GEOIP,CN,DIRECT,no-resolve");
+        // Check rules: LAN and CN direct, foreign proxy
+        expect(config.rules).toContain("IP-CIDR,127.0.0.0/8,DIRECT,no-resolve");
+        expect(config.rules).toContain("DOMAIN-SUFFIX,cn,DIRECT");
+        expect(config.rules).toContain("GEOIP,CN,DIRECT");
         expect(config.rules).toContain("MATCH,PROXY");
     });
 
@@ -77,11 +74,9 @@ vless://uuid2@server2.com:443?security=tls&sni=server2.com#Node-2`;
         const config = yaml.load(builder.formatConfig());
 
         expect(config.proxies.length).toBe(0);
-        expect(config["proxy-groups"].length).toBe(2);
-        expect(config["proxy-groups"].map((g) => g.name)).toEqual([
-            "PROXY",
-            "AI",
-        ]);
+        expect(config["proxy-groups"].length).toBe(1);
+        expect(config["proxy-groups"][0].name).toBe("PROXY");
+        expect(config["proxy-groups"][0].proxies).toEqual(["DIRECT"]);
         expect(config.rules).toContain("MATCH,PROXY");
     });
 
@@ -216,6 +211,13 @@ describe("/sub endpoint integration", () => {
         );
         expect(subRes.status).toBe(200);
         expect(subRes.headers.get("content-type")).toContain("text/yaml");
+        expect(subRes.headers.get("content-disposition")).toContain(
+            "attachment;",
+        );
+        expect(subRes.headers.get("cache-control")).toBe(
+            "no-cache, no-store, must-revalidate",
+        );
+        expect(subRes.headers.get("profile-update-interval")).toBe("24");
 
         const text = await subRes.text();
         const config = yaml.load(text);

@@ -8,10 +8,24 @@ import {
 const SIMPLE_CLASH_CONFIG = {
     "mixed-port": 7890,
     "allow-lan": true,
-    mode: "Rule",
+    mode: "rule",
     "log-level": "info",
     "unified-delay": true,
     "tcp-concurrent": true,
+    "external-controller": "0.0.0.0:9090",
+    dns: {
+        enable: true,
+        listen: "0.0.0.0:1053",
+        ipv6: false,
+        "enhanced-mode": "fake-ip",
+        "fake-ip-range": "198.18.0.1/16",
+        nameserver: ["223.5.5.5", "119.29.29.29"],
+        fallback: ["8.8.8.8", "1.1.1.1"],
+        "fallback-filter": {
+            geoip: true,
+            "geoip-code": "CN",
+        },
+    },
     sniffer: {
         enable: true,
         sniff: {
@@ -92,46 +106,29 @@ export class SimpleClashConfigBuilder {
     addProxyGroups() {
         const proxyNames = this.config.proxies.map((p) => p.name);
 
-        // Only two selectable groups are needed: one for AI traffic (so it
-        // can pin a different node than the default), one for all remaining
-        // foreign traffic. Domestic traffic goes to the built-in DIRECT.
-        this.config["proxy-groups"].push(
-            {
-                type: "select",
-                name: "PROXY",
-                proxies: [...proxyNames, "DIRECT"],
-                lazy: false,
-            },
-            {
-                type: "select",
-                name: "AI",
-                proxies: [...proxyNames, "DIRECT"],
-            },
-        );
+        // Exactly one selectable group containing all parsed nodes and direct fallback.
+        this.config["proxy-groups"].push({
+            type: "select",
+            name: "PROXY",
+            proxies:
+                proxyNames.length > 0 ? [...proxyNames, "DIRECT"] : ["DIRECT"],
+        });
     }
 
     addRules() {
-        // Domestic sites are routed via geosite/geoip CN instead of a
-        // hardcoded domain list, which would go stale and is unmaintainable.
-        // Only AI domains need explicit rules so AI traffic can be pinned to
-        // its own group; everything else falls through to PROXY.
+        // Standard Clash / OpenClash routing: LAN & CN traffic direct, everything else proxies.
         this.config.rules = [
-            "GEOSITE,private,DIRECT",
-            "GEOIP,private,DIRECT,no-resolve",
-            "GEOSITE,category-ads-all,REJECT",
-            "GEOSITE,cn,DIRECT",
-            "GEOIP,CN,DIRECT,no-resolve",
-            // AI services (separate group so they can use a dedicated node)
-            "GEOSITE,openai,AI",
-            "DOMAIN-SUFFIX,anthropic.com,AI",
-            "DOMAIN-SUFFIX,claude.ai,AI",
-            "DOMAIN-SUFFIX,oaistatic.com,AI",
-            "DOMAIN-SUFFIX,oaiusercontent.com,AI",
-            "DOMAIN-SUFFIX,cursor.sh,AI",
-            "DOMAIN-SUFFIX,cursor.com,AI",
-            "DOMAIN-SUFFIX,generativelanguage.googleapis.com,AI",
-            // All remaining foreign traffic
-            "GEOSITE,geolocation-!cn,PROXY",
+            "IP-CIDR,127.0.0.0/8,DIRECT,no-resolve",
+            "IP-CIDR,172.16.0.0/12,DIRECT,no-resolve",
+            "IP-CIDR,192.168.0.0/16,DIRECT,no-resolve",
+            "IP-CIDR,10.0.0.0/8,DIRECT,no-resolve",
+            "IP-CIDR,100.64.0.0/10,DIRECT,no-resolve",
+            "IP-CIDR6,::1/128,DIRECT,no-resolve",
+            "IP-CIDR6,fc00::/7,DIRECT,no-resolve",
+            "IP-CIDR6,fe80::/10,DIRECT,no-resolve",
+            "IP-CIDR6,fd00::/8,DIRECT,no-resolve",
+            "DOMAIN-SUFFIX,cn,DIRECT",
+            "GEOIP,CN,DIRECT",
             "MATCH,PROXY",
         ];
     }

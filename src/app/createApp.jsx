@@ -191,11 +191,21 @@ export function createApp(bindings = {}) {
                 return c.text("Config not found", 404);
             }
 
+            const meta = await storage.getConfigMeta(configId);
+            const rawName = meta?.name || configId;
+            const safeAsciiName = `${rawName.replace(/[^\w.-]/g, "_") || "config"}.yaml`;
+            const encodedName = `${encodeURIComponent(rawName)}.yaml`;
+
             const ua = c.req.header("User-Agent") || "curl/7.74.0";
             const builder = new SimpleClashConfigBuilder(vlessLinks, ua);
             await builder.build();
             return c.text(builder.formatConfig(), 200, {
                 "Content-Type": "text/yaml; charset=utf-8",
+                "Content-Disposition": `attachment; filename="${safeAsciiName}"; filename*=UTF-8''${encodedName}`,
+                "Profile-Update-Interval": "24",
+                "Subscription-Userinfo":
+                    "upload=0; download=0; total=1073741824000; expire=0",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
             });
         } catch (error) {
             return handleError(c, error, runtime.logger);
