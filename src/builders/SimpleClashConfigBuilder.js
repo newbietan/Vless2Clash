@@ -1,9 +1,6 @@
 import yaml from "js-yaml";
 import { deepCopy } from "../utils.js";
-import {
-    parseVless,
-    convertProxyForClash,
-} from "../parsers/protocols/vlessParser.js";
+import { parseLinkToClash } from "../parsers/linkParser.js";
 
 const SIMPLE_CLASH_CONFIG = {
     "mixed-port": 7890,
@@ -48,36 +45,28 @@ export class SimpleClashConfigBuilder {
     }
 
     async build() {
-        await this.parseVlessLinks();
+        await this.parseLinks();
         this.addProxyGroups();
         this.addRules();
         return this.formatConfig();
     }
 
-    async parseVlessLinks() {
+    async parseLinks() {
         const input = this.inputString || "";
         const lines = input.split("\n").filter((line) => line.trim() !== "");
 
         for (const line of lines) {
             const trimmedLine = line.trim();
-            if (trimmedLine.startsWith("vless://")) {
-                try {
-                    const proxy = parseVless(trimmedLine);
-                    if (proxy && proxy.tag) {
-                        const converted = this.convertProxy(proxy);
-                        if (converted) {
-                            this.addProxyWithDedup(converted);
-                        }
-                    }
-                } catch (error) {
-                    console.warn("Failed to parse VLESS link:", error.message);
-                }
+            const converted = parseLinkToClash(trimmedLine);
+            if (converted && converted.name) {
+                this.addProxyWithDedup(converted);
             }
         }
     }
 
-    convertProxy(proxy) {
-        return convertProxyForClash(proxy);
+    // Maintain backward compatibility for callers expecting parseVlessLinks
+    async parseVlessLinks() {
+        return this.parseLinks();
     }
 
     addProxyWithDedup(proxy) {

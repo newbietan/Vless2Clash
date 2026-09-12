@@ -1,6 +1,7 @@
 import {
     createTlsConfig,
     createTransportConfig,
+    guessRegion,
     parseArray,
     parseBool,
 } from "../../utils.js";
@@ -144,7 +145,12 @@ function collectVlessLinks(input, { dedup }) {
 }
 
 function parseVlessUri(value) {
-    const url = new URL(value);
+    let url;
+    try {
+        url = new URL(value);
+    } catch {
+        throw new TypeError("Invalid VLESS endpoint");
+    }
     if (url.protocol !== "vless:") {
         throw new TypeError("Unsupported protocol");
     }
@@ -169,30 +175,4 @@ function parseVlessUri(value) {
     return { uuid, host, port, params, paramEntries, name };
 }
 
-const REGION_PATTERNS = {
-    US: ["us", "america", "美国"],
-    JP: ["jp", "japan", "日本", "东京"],
-    HK: ["hk", "hongkong", "香港"],
-    SG: ["sg", "singapore", "新加坡", "狮城"],
-    TW: ["tw", "taiwan", "台湾", "台北"],
-    KR: ["kr", "korea", "韩国", "首尔"],
-    DE: ["de", "germany", "德国"],
-    GB: ["gb", "uk", "英国", "伦敦"],
-};
-
-function guessRegion(server, name) {
-    const lowerName = name.toLowerCase();
-    const lowerServer = server.toLowerCase();
-
-    for (const [region, patterns] of Object.entries(REGION_PATTERNS)) {
-        if (
-            patterns.some(
-                (p) => lowerName.includes(p) || lowerServer.includes(p),
-            )
-        ) {
-            return region;
-        }
-    }
-
-    return "OTHER";
-}
+export { guessRegion };

@@ -247,6 +247,7 @@ export const SubscriptionsPage = () => {
                             if (nodes.length > 0) {
                                 html += '<div class="space-y-2 mb-6 overflow-y-auto max-h-48 pr-2">';
                                 nodes.forEach(node => {
+                                    const protoLabel = String(node.protocol || 'VLESS').toUpperCase();
                                     const secColor = (node.security === 'tls' || node.security === 'reality') ? 'primary' : 'outline';
                                     const secLabel = String(node.security || 'none').toUpperCase();
                                     const transportLabel = String(node.transport || 'tcp').toUpperCase();
@@ -258,6 +259,7 @@ export const SubscriptionsPage = () => {
                                     html += '<span class="text-label-sm font-code-md text-on-surface-variant/60 mt-1">' + escapeHtml(node.server) + ':' + escapeHtml(node.port) + '</span>';
                                     html += '</div>';
                                     html += '<div class="flex items-center gap-2">';
+                                    html += '<span class="px-2 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold uppercase tracking-tighter">' + escapeHtml(protoLabel) + '</span>';
                                     html += '<span class="px-2 py-0.5 rounded bg-' + transportColor + '/10 border border-' + transportColor + '/30 text-' + transportColor + ' text-[10px] font-bold uppercase tracking-tighter">' + escapeHtml(transportLabel) + '</span>';
                                     html += '<span class="px-2 py-0.5 rounded bg-' + secColor + '/10 border border-' + secColor + '/30 text-' + secColor + ' text-[10px] font-bold uppercase tracking-tighter">' + escapeHtml(secLabel) + '</span>';
                                     html += '</div></div>';
@@ -267,16 +269,17 @@ export const SubscriptionsPage = () => {
                                 html += '<div class="text-center text-on-surface-variant text-sm py-4">暂无节点信息</div>';
                             }
 
-                            // Original VLESS Links
-                            if (config.vlessLinks) {
+                            // Original Node Links
+                            const rawLinks = config.links || config.vlessLinks;
+                            if (rawLinks) {
                                 html += '<div class="mt-4 pt-4 border-t border-outline-variant/20">';
                                 html += '<div class="flex justify-between items-center mb-2">';
-                                html += '<span class="text-label-sm font-code-md text-outline uppercase tracking-widest">原始 VLESS 链接</span>';
+                                html += '<span class="text-label-sm font-code-md text-outline uppercase tracking-widest">原始节点链接</span>';
                                 html += '<button onclick="event.stopPropagation(); copyVlessLinks(\\'' + config.id + '\\')" class="text-primary hover:text-primary-fixed text-label-sm font-code-md flex items-center gap-1">';
                                 html += '<span class="material-symbols-outlined text-[14px]">content_copy</span> 复制全部</button>';
                                 html += '</div>';
                                 html += '<div class="bg-surface-container-lowest/50 p-3 rounded border border-outline-variant/30 overflow-x-auto">';
-                                html += '<code class="text-secondary-fixed-dim whitespace-nowrap text-code-md" id="vless-links-display-' + config.id + '">' + escapeHtml(config.vlessLinks) + '</code>';
+                                html += '<code class="text-secondary-fixed-dim whitespace-nowrap text-code-md" id="vless-links-display-' + config.id + '">' + escapeHtml(rawLinks) + '</code>';
                                 html += '</div></div>';
                             }
 
@@ -322,7 +325,7 @@ export const SubscriptionsPage = () => {
                     const el = document.getElementById('vless-links-display-' + configId);
                     if (el) {
                         navigator.clipboard.writeText(el.textContent);
-                        showToast('VLESS 链接已复制');
+                        showToast('节点链接已复制');
                     }
                 }
 

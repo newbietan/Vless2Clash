@@ -7,11 +7,7 @@ import { LoginPage } from "../components/LoginPage.jsx";
 import { DashboardPage } from "../components/DashboardPage.jsx";
 import { SubscriptionsPage } from "../components/SubscriptionsPage.jsx";
 import { SimpleClashConfigBuilder } from "../builders/SimpleClashConfigBuilder.js";
-import {
-    normalizeVlessLinks,
-    parseVlessLinks,
-} from "../parsers/protocols/vlessParser.js";
-import { APP_NAME } from "../constants.js";
+import { normalizeProxyLinks, parseProxyNodes } from "../parsers/linkParser.js";
 import { ConfigStorageService } from "../services/configStorageService.js";
 import { AuthService } from "../services/authService.js";
 import { TurnstileService } from "../services/turnstileService.js";
@@ -273,15 +269,17 @@ export function createApp(bindings = {}) {
         }
     });
 
-    // API: Parse VLESS links and return node info (requires auth)
+    // API: Parse proxy links and return node info (requires auth)
     app.post("/api/parse-nodes", requireApiAuth, async (c) => {
         try {
-            const { vlessLinks, dedup = true } = await c.req.json();
-            if (!vlessLinks) {
-                return c.json({ error: "Missing vlessLinks" }, 400);
+            const body = await c.req.json();
+            const rawLinks = body?.links || body?.vlessLinks;
+            const dedup = body?.dedup ?? true;
+            if (!rawLinks) {
+                return c.json({ error: "Missing links parameter" }, 400);
             }
 
-            const nodes = parseVlessLinks(vlessLinks, { dedup });
+            const nodes = parseProxyNodes(rawLinks, { dedup });
             return c.json(nodes);
         } catch (error) {
             return handleError(c, error, runtime.logger);
@@ -328,16 +326,17 @@ function getClientIp(c) {
 }
 
 function parseSubscriptionPayload(body) {
-    const { vlessLinks, name, dedup = true } = body ?? {};
-    if (!vlessLinks || typeof vlessLinks !== "string") {
-        throw new InvalidPayloadError("Missing vlessLinks parameter");
+    const rawLinks = body?.links || body?.vlessLinks;
+    const { name, dedup = true } = body ?? {};
+    if (!rawLinks || typeof rawLinks !== "string") {
+        throw new InvalidPayloadError("Missing links parameter");
     }
-    const normalizedLinks = normalizeVlessLinks(vlessLinks, { dedup });
-    const nodes = parseVlessLinks(normalizedLinks, { dedup: false });
+    const normalizedLinks = normalizeProxyLinks(rawLinks, { dedup });
+    const nodes = parseProxyNodes(normalizedLinks, { dedup: false });
     if (nodes.length === 0) {
-        throw new InvalidPayloadError("No valid VLESS links found");
+        throw new InvalidPayloadError("No valid proxy links found");
     }
-    return { vlessLinks: normalizedLinks, name, nodes };
+    return { vlessLinks: normalizedLinks, links: normalizedLinks, name, nodes };
 }
 
 function requireConfigStorage(service) {

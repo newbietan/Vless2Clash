@@ -42,41 +42,130 @@ function guessRegion(server, name) {
     return "OTHER";
 }
 
+function isSupportedLink(line) {
+    const trimmed = (line || "").trim();
+    return (
+        trimmed.startsWith("vless://") ||
+        trimmed.startsWith("hysteria2://") ||
+        trimmed.startsWith("hy2://")
+    );
+}
+
 function parseNodes(links, shouldDedup = true) {
     const result = [];
     const seen = new Set();
     for (const link of links) {
         try {
             const url = new URL(link.trim());
-            const uuid = url.username;
-            const server = url.hostname;
-            const port = url.port || "443";
+            const server = url.hostname.replace(/^\[(.*)\]$/, "$1");
+            const port = parseInt(url.port || "443", 10);
             const params = url.searchParams;
             const name = decodeURIComponent(
                 url.hash.slice(1) || server + ":" + port,
             );
-            const dedupKey = server + ":" + port + ":" + uuid;
-            if (shouldDedup && seen.has(dedupKey)) continue;
-            seen.add(dedupKey);
-            result.push({
-                name,
-                uuid: decodeURIComponent(uuid),
-                server,
-                port: parseInt(port),
-                protocol: "VLESS",
-                transport: params.get("type") || "tcp",
-                security: params.get("security") || "none",
-                sni: params.get("sni") || "",
-                path: params.get("path") || "",
-                host: params.get("host") || "",
-                serviceName: params.get("serviceName") || "",
-                flow: params.get("flow") || "",
-                region: guessRegion(server, name),
-                params: Array.from(params.entries()),
-            });
+
+            if (url.protocol === "vless:") {
+                const uuid = decodeURIComponent(url.username || "");
+                const dedupKey = "vless:" + server + ":" + port + ":" + uuid;
+                if (shouldDedup && seen.has(dedupKey)) continue;
+                seen.add(dedupKey);
+                result.push({
+                    name,
+                    uuid,
+                    server,
+                    port,
+                    protocol: "VLESS",
+                    transport: params.get("type") || "tcp",
+                    security: params.get("security") || "none",
+                    sni: params.get("sni") || "",
+                    path: params.get("path") || "",
+                    host: params.get("host") || "",
+                    serviceName: params.get("serviceName") || "",
+                    flow: params.get("flow") || "",
+                    region: guessRegion(server, name),
+                    params: Array.from(params.entries()),
+                });
+            } else if (
+                url.protocol === "hysteria2:" ||
+                url.protocol === "hy2:"
+            ) {
+                const auth = decodeURIComponent(
+                    url.username || url.password || "",
+                );
+                const dedupKey =
+                    "hysteria2:" + server + ":" + port + ":" + auth;
+                if (shouldDedup && seen.has(dedupKey)) continue;
+                seen.add(dedupKey);
+
+                const insecureParam =
+                    params.get("insecure") ??
+                    params.get("allowInsecure") ??
+                    params.get("allow-insecure");
+                const insecure =
+                    insecureParam === "1" || insecureParam === "true";
+
+                result.push({
+                    name,
+                    uuid: auth,
+                    server,
+                    port,
+                    protocol: "HYSTERIA2",
+                    transport: "udp",
+                    security: insecure ? "insecure" : "tls",
+                    sni: params.get("sni") || params.get("peer") || "",
+                    path: "",
+                    host: "",
+                    serviceName: "",
+                    flow: "",
+                    region: guessRegion(server, name),
+                    params: Array.from(params.entries()),
+                    ports: params.get("mport") || params.get("ports") || "",
+                    obfs: params.get("obfs") || "",
+                    obfsPassword: params.get("obfs-password") || "",
+                });
+            }
         } catch {}
     }
     return result;
+}
+
+function serializeLink(node) {
+    if (node.protocol === "HYSTERIA2") {
+        return serializeHysteria2Link(node);
+    }
+    return serializeVlessLink(node);
+}
+
+function serializeHysteria2Link(node) {
+    const params = new URLSearchParams(
+        Array.isArray(node.params) ? node.params : [],
+    );
+    setParam(params, "sni", node.sni);
+    if (node.security === "insecure") {
+        params.set("insecure", "1");
+    } else {
+        params.delete("insecure");
+    }
+    setParam(params, "ports", node.ports);
+    setParam(params, "obfs", node.obfs);
+    setParam(params, "obfs-password", node.obfsPassword);
+
+    const query = params.toString();
+    const hash = node.name ? "#" + encodeURIComponent(node.name) : "";
+    const server =
+        node.server.includes(":") && !node.server.startsWith("[")
+            ? "[" + node.server + "]"
+            : node.server;
+    return (
+        "hysteria2://" +
+        encodeURIComponent(node.uuid) +
+        "@" +
+        server +
+        ":" +
+        node.port +
+        (query ? "?" + query : "") +
+        hash
+    );
 }
 
 function serializeVlessLink(node) {
@@ -127,9 +216,7 @@ function syncFromTextarea() {
         renderPreview();
         return;
     }
-    const lines = input
-        .split("\n")
-        .filter((l) => l.trim().startsWith("vless://"));
+    const lines = input.split("\n").filter((l) => isSupportedLink(l));
     const shouldDedup = document.getElementById("opt-dedup").checked;
     nodes = parseNodes(lines, shouldDedup);
     selectedIndices.clear();
@@ -138,7 +225,7 @@ function syncFromTextarea() {
 }
 
 function syncToTextarea() {
-    const links = nodes.map((n) => serializeVlessLink(n));
+    const links = nodes.map((n) => serializeLink(n));
     textarea.value = links.join("\n");
 }
 
@@ -173,6 +260,7 @@ function renderPreview() {
     // pi-lens-ignore: no-inner-html-js — 所有用户输入插值均经 escapeHtml() 转义，见上方 escapeHtml 定义, no-inner-html-js
     nodeList.innerHTML = filtered
         .map(({ node, index }) => {
+            const protoLabel = (node.protocol || "VLESS").toUpperCase();
             const secColor =
                 node.security === "tls" || node.security === "reality"
                     ? "primary"
@@ -211,6 +299,10 @@ function renderPreview() {
                 "</span>";
             html += "</div></div>";
             html += '<div class="flex items-center gap-2 flex-shrink-0">';
+            html +=
+                '<span class="px-1.5 py-0.5 rounded bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold uppercase tracking-tighter">' +
+                escapeHtml(protoLabel) +
+                "</span>";
             html +=
                 '<span class="px-1.5 py-0.5 rounded bg-' +
                 transportColor +
@@ -272,7 +364,11 @@ function escapeHtml(str) {
 function openEditor(index) {
     editingIndex = index;
     const node = nodes[index];
-    const transportFields = getTransportFields(node.transport, node);
+    const isHysteria2 = node.protocol === "HYSTERIA2";
+    const transportFields = isHysteria2
+        ? ""
+        : getTransportFields(node.transport, node);
+    const credLabel = isHysteria2 ? "认证密码 (Password)" : "UUID";
 
     let html =
         '<div class="sm:col-span-2"><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">节点名</label>';
@@ -293,76 +389,117 @@ function openEditor(index) {
         node.port +
         '" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
     html +=
-        '<div class="sm:col-span-2"><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">UUID</label>';
+        '<div class="sm:col-span-2"><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">' +
+        credLabel +
+        "</label>";
     html +=
         '<input type="text" id="ed-uuid" value="' +
         escapeHtml(node.uuid) +
         '" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
-    html +=
-        '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">传输方式</label>';
-    html +=
-        '<select id="ed-transport" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary">';
-    ["tcp", "ws", "grpc", "xhttp"].forEach((t) => {
-        html +=
-            '<option value="' +
-            t +
-            '"' +
-            (node.transport === t ? " selected" : "") +
-            ">" +
-            t.toUpperCase() +
-            "</option>";
-    });
-    html += "</select></div>";
-    html +=
-        '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">安全</label>';
-    html +=
-        '<select id="ed-security" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary">';
-    ["none", "tls", "reality"].forEach((s) => {
-        html +=
-            '<option value="' +
-            s +
-            '"' +
-            (node.security === s ? " selected" : "") +
-            ">" +
-            s.toUpperCase() +
-            "</option>";
-    });
-    html += "</select></div>";
-    html +=
-        '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">SNI</label>';
-    html +=
-        '<input type="text" id="ed-sni" value="' +
-        escapeHtml(node.sni) +
-        '" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
 
-    // Transport-specific fields
-    html += '<div id="ed-transport-fields">' + transportFields + "</div>";
+    if (isHysteria2) {
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">跳跃端口 (mport/ports)</label>';
+        html +=
+            '<input type="text" id="ed-ports" value="' +
+            escapeHtml(node.ports || "") +
+            '" placeholder="如 10000-20000" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">安全模式</label>';
+        html +=
+            '<select id="ed-security" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary">';
+        html +=
+            '<option value="tls"' +
+            (node.security === "tls" ? " selected" : "") +
+            ">TLS (标准验证)</option>";
+        html +=
+            '<option value="insecure"' +
+            (node.security === "insecure" ? " selected" : "") +
+            ">INSECURE (跳过验证)</option>";
+        html += "</select></div>";
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">SNI</label>';
+        html +=
+            '<input type="text" id="ed-sni" value="' +
+            escapeHtml(node.sni) +
+            '" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">混淆类型 (obfs)</label>';
+        html +=
+            '<input type="text" id="ed-obfs" value="' +
+            escapeHtml(node.obfs || "") +
+            '" placeholder="如 salamander" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
+    } else {
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">传输方式</label>';
+        html +=
+            '<select id="ed-transport" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary">';
+        ["tcp", "ws", "grpc", "xhttp"].forEach((t) => {
+            html +=
+                '<option value="' +
+                t +
+                '"' +
+                (node.transport === t ? " selected" : "") +
+                ">" +
+                t.toUpperCase() +
+                "</option>";
+        });
+        html += "</select></div>";
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">安全</label>';
+        html +=
+            '<select id="ed-security" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary">';
+        ["none", "tls", "reality"].forEach((s) => {
+            html +=
+                '<option value="' +
+                s +
+                '"' +
+                (node.security === s ? " selected" : "") +
+                ">" +
+                s.toUpperCase() +
+                "</option>";
+        });
+        html += "</select></div>";
+        html +=
+            '<div><label class="text-label-sm font-code-md text-on-surface-variant block mb-1">SNI</label>';
+        html +=
+            '<input type="text" id="ed-sni" value="' +
+            escapeHtml(node.sni) +
+            '" class="w-full bg-surface-container-lowest border border-outline-variant rounded px-2 py-1.5 text-code-md font-code-md text-on-surface focus:outline-none focus:border-primary" /></div>';
+
+        // Transport-specific fields
+        html += '<div id="ed-transport-fields">' + transportFields + "</div>";
+    }
 
     // pi-lens-ignore: no-inner-html-js — 编辑表单值均经 escapeHtml() 转义, no-inner-html-js
     editorForm.innerHTML = html;
     nodeEditor.classList.remove("hidden");
 
-    // Re-render transport fields on change
-    document.getElementById("ed-transport").addEventListener("change", (e) => {
-        const currentNode = {
-            ...node,
-            path:
-                document.getElementById("ed-path")?.value.trim() ||
-                node.path ||
-                "",
-            host:
-                document.getElementById("ed-host")?.value.trim() ||
-                node.host ||
-                "",
-            serviceName:
-                document.getElementById("ed-svc")?.value.trim() ||
-                node.serviceName ||
-                "",
-        };
-        // pi-lens-ignore: no-inner-html-js — 传输字段值均经 escapeHtml() 转义, no-inner-html-js
-        document.getElementById("ed-transport-fields").innerHTML =
-            getTransportFields(e.target.value, currentNode);
-    });
+    if (!isHysteria2) {
+        // Re-render transport fields on change
+        document
+            .getElementById("ed-transport")
+            .addEventListener("change", (e) => {
+                const currentNode = {
+                    ...node,
+                    path:
+                        document.getElementById("ed-path")?.value.trim() ||
+                        node.path ||
+                        "",
+                    host:
+                        document.getElementById("ed-host")?.value.trim() ||
+                        node.host ||
+                        "",
+                    serviceName:
+                        document.getElementById("ed-svc")?.value.trim() ||
+                        node.serviceName ||
+                        "",
+                };
+                // pi-lens-ignore: no-inner-html-js — 传输字段值均经 escapeHtml() 转义, no-inner-html-js
+                document.getElementById("ed-transport-fields").innerHTML =
+                    getTransportFields(e.target.value, currentNode);
+            });
+    }
 }
 
 function getTransportFields(transport, node) {
@@ -401,20 +538,27 @@ function saveNodeEdit() {
     node.name = document.getElementById("ed-name").value.trim() || node.name;
     node.server =
         document.getElementById("ed-server").value.trim() || node.server;
-    node.port = parseInt(document.getElementById("ed-port").value) || node.port;
+    node.port =
+        parseInt(document.getElementById("ed-port").value, 10) || node.port;
     node.uuid = document.getElementById("ed-uuid").value.trim() || node.uuid;
-    node.transport = document.getElementById("ed-transport").value;
     node.security = document.getElementById("ed-security").value;
     node.sni = document.getElementById("ed-sni").value.trim();
     node.region = guessRegion(node.server, node.name);
 
-    // Transport-specific
-    const pathEl = document.getElementById("ed-path");
-    const hostEl = document.getElementById("ed-host");
-    const svcEl = document.getElementById("ed-svc");
-    node.path = pathEl ? pathEl.value.trim() : "";
-    node.host = hostEl ? hostEl.value.trim() : "";
-    node.serviceName = svcEl ? svcEl.value.trim() : "";
+    if (node.protocol === "HYSTERIA2") {
+        const portsEl = document.getElementById("ed-ports");
+        const obfsEl = document.getElementById("ed-obfs");
+        node.ports = portsEl ? portsEl.value.trim() : "";
+        node.obfs = obfsEl ? obfsEl.value.trim() : "";
+    } else {
+        node.transport = document.getElementById("ed-transport").value;
+        const pathEl = document.getElementById("ed-path");
+        const hostEl = document.getElementById("ed-host");
+        const svcEl = document.getElementById("ed-svc");
+        node.path = pathEl ? pathEl.value.trim() : "";
+        node.host = hostEl ? hostEl.value.trim() : "";
+        node.serviceName = svcEl ? svcEl.value.trim() : "";
+    }
 
     closeEditor();
     syncToTextarea();
@@ -512,7 +656,7 @@ document
 convertBtn.addEventListener("click", async () => {
     const input = textarea.value.trim();
     if (!input) {
-        alert("请输入至少一个 VLESS 链接");
+        alert("请输入至少一个有效节点链接 (VLESS / Hysteria 2)");
         return;
     }
 
@@ -528,21 +672,22 @@ convertBtn.addEventListener("click", async () => {
     const dedup = document.getElementById("opt-dedup").checked;
 
     try {
-        let links = input
-            .split("\n")
-            .filter((l) => l.trim().startsWith("vless://"));
+        let links = input.split("\n").filter((l) => isSupportedLink(l));
 
         if (dedup) {
             const seen = new Set();
             links = links.filter((link) => {
                 try {
                     const url = new URL(link.trim());
+                    const auth = url.username || url.password || "";
                     const key =
+                        url.protocol +
+                        ":" +
                         url.hostname +
                         ":" +
                         (url.port || "443") +
                         ":" +
-                        url.username;
+                        auth;
                     if (seen.has(key)) return false;
                     seen.add(key);
                     return true;
@@ -562,6 +707,7 @@ convertBtn.addEventListener("click", async () => {
                 Authorization: "Bearer " + getToken(),
             },
             body: JSON.stringify({
+                links: processedInput,
                 vlessLinks: processedInput,
                 nodes: nodeData,
                 dedup,
@@ -607,7 +753,7 @@ updateBtn.addEventListener("click", async () => {
     if (!editingConfigId) return;
     const input = textarea.value.trim();
     if (!input) {
-        alert("请输入至少一个 VLESS 链接");
+        alert("请输入至少一个有效节点链接 (VLESS / Hysteria 2)");
         return;
     }
 
@@ -619,21 +765,22 @@ updateBtn.addEventListener("click", async () => {
     statusText.textContent = "更新中...";
 
     try {
-        let links = input
-            .split("\n")
-            .filter((l) => l.trim().startsWith("vless://"));
+        let links = input.split("\n").filter((l) => isSupportedLink(l));
         const dedup = document.getElementById("opt-dedup").checked;
         if (dedup) {
             const seen = new Set();
             links = links.filter((link) => {
                 try {
                     const url = new URL(link.trim());
+                    const auth = url.username || url.password || "";
                     const key =
+                        url.protocol +
+                        ":" +
                         url.hostname +
                         ":" +
                         (url.port || "443") +
                         ":" +
-                        url.username;
+                        auth;
                     if (seen.has(key)) return false;
                     seen.add(key);
                     return true;
@@ -651,6 +798,7 @@ updateBtn.addEventListener("click", async () => {
                 Authorization: "Bearer " + getToken(),
             },
             body: JSON.stringify({
+                links: links.join("\n"),
                 vlessLinks: links.join("\n"),
                 nodes: nodeData,
                 dedup,
@@ -688,8 +836,9 @@ async function loadExistingConfig() {
         if (!res.ok) throw new Error("Failed to load");
         const config = await res.json();
 
-        if (config.vlessLinks) {
-            textarea.value = config.vlessLinks;
+        const links = config.links || config.vlessLinks;
+        if (links) {
+            textarea.value = links;
             editingConfigId = editId;
             updateBtn.classList.remove("hidden");
             syncFromTextarea();

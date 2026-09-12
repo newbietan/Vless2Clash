@@ -10,8 +10,8 @@ export const DashboardPage = () => {
                     仪表盘
                 </h1>
                 <p class="text-body-md font-code-md text-on-surface-variant">
-                    &gt; 聚合、过滤并转换多个 vless:// URI 为统一的 Clash
-                    订阅配置。
+                    &gt; 聚合、过滤并转换多个 VLESS / Hysteria 2 URI 为统一的
+                    Clash 订阅配置。
                 </p>
             </div>
 
@@ -27,7 +27,7 @@ export const DashboardPage = () => {
                             <span class="material-symbols-outlined text-[16px]">
                                 input
                             </span>
-                            输入 VLESS 链接
+                            输入 VLESS 链接 (支持 Hysteria 2)
                         </label>
                         <div class="flex items-center gap-4">
                             <span
@@ -57,7 +57,7 @@ export const DashboardPage = () => {
                         class="w-full h-48 bg-surface-container-lowest border border-outline-variant rounded p-3 font-code-md text-code-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y transition-colors"
                         id="vless-input"
                         placeholder={`vless://uuid@server:port?security=tls&type=ws&path=/ws#节点名
-vless://uuid2@server2:port?security=reality&pbk=xxx#节点名2`}
+hysteria2://password@server2:443?sni=server2.com&obfs=salamander&obfs-password=xxx#节点名2`}
                     ></textarea>
                 </div>
 

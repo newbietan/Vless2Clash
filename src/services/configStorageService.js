@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
 import { generateWebPath } from "../utils.js";
+import { isSupportedLink } from "../parsers/linkParser.js";
 import { InvalidPayloadError, MissingDependencyError } from "./errors.js";
 
 export class ConfigStorageService {
@@ -22,8 +23,8 @@ export class ConfigStorageService {
         const stored = await kv.get(configId);
         if (!stored) return null;
 
-        // For vless type, return as plain text
-        if (configId.startsWith("vless_")) {
+        // For raw proxy link types, return as plain text
+        if (configId.startsWith("vless_") || configId.startsWith("sub_")) {
             return stored;
         }
 
@@ -64,13 +65,14 @@ export class ConfigStorageService {
         await kv.put(configId, configString, putOptions);
 
         // Count nodes
-        const nodeCount = Array.isArray(nodes)
-            ? nodes.length
-            : type === "vless"
-              ? content
-                    .split("\n")
-                    .filter((l) => l.trim().startsWith("vless://")).length
-              : 0;
+        let nodeCount = 0;
+        if (Array.isArray(nodes)) {
+            nodeCount = nodes.length;
+        } else if (type === "vless" || type === "sub") {
+            nodeCount = content
+                .split("\n")
+                .filter((l) => isSupportedLink(l)).length;
+        }
 
         // Save metadata with nodes
         const meta = {
@@ -104,10 +106,11 @@ export class ConfigStorageService {
 
         try {
             const meta = JSON.parse(metaStr);
-            if (meta.type === "vless") {
-                const vlessLinks = await kv.get(configId);
-                if (!vlessLinks) return null;
-                meta.vlessLinks = vlessLinks;
+            if (meta.type === "vless" || meta.type === "sub") {
+                const rawLinks = await kv.get(configId);
+                if (!rawLinks) return null;
+                meta.vlessLinks = rawLinks;
+                meta.links = rawLinks;
             }
             return meta;
         } catch {
@@ -130,13 +133,17 @@ export class ConfigStorageService {
         const configString = this.serializeConfig(existingMeta.type, content);
         await kv.put(configId, configString, putOptions);
 
-        const nodeCount = Array.isArray(nodes)
-            ? nodes.length
-            : existingMeta.type === "vless"
-              ? content
-                    .split("\n")
-                    .filter((l) => l.trim().startsWith("vless://")).length
-              : existingMeta.nodeCount;
+        let nodeCount = existingMeta.nodeCount;
+        if (Array.isArray(nodes)) {
+            nodeCount = nodes.length;
+        } else if (
+            existingMeta.type === "vless" ||
+            existingMeta.type === "sub"
+        ) {
+            nodeCount = content
+                .split("\n")
+                .filter((l) => isSupportedLink(l)).length;
+        }
 
         const meta = {
             ...existingMeta,
@@ -166,10 +173,11 @@ export class ConfigStorageService {
 
                 try {
                     const meta = JSON.parse(fullMeta);
-                    if (item.type === "vless") {
-                        const vlessLinks = await kv.get(item.id);
-                        if (!vlessLinks) return null;
-                        meta.vlessLinks = vlessLinks;
+                    if (item.type === "vless" || item.type === "sub") {
+                        const rawLinks = await kv.get(item.id);
+                        if (!rawLinks) return null;
+                        meta.vlessLinks = rawLinks;
+                        meta.links = rawLinks;
                     }
                     return meta;
                 } catch {
@@ -264,12 +272,14 @@ export class ConfigStorageService {
                 : content;
         }
 
-        // For vless type, store as plain text
-        if (type === "vless") {
+        // For subscription link type, store as plain text
+        if (type === "vless" || type === "sub") {
             if (typeof content === "string") {
                 return content;
             }
-            throw new InvalidPayloadError("VLESS config must be a string");
+            throw new InvalidPayloadError(
+                "Subscription config must be a string",
+            );
         }
 
         if (typeof content === "object") {
